@@ -41,14 +41,28 @@ export default class CubeInteraction {
             point: intersection.point.clone()
         }
     }
-
+    /** 
+     * @param {Vector3} vector
+     */
+    // modifies input vector and returns the index of dominant direction (0:x,1:y,2:z) 
+    snapVectorToBasis(vector) {
+        let max = Math.max(Math.abs(vector.x), Math.abs(vector.y), Math.abs(vector.z))
+        vector.x = (vector.x / max)|0
+        vector.y = vector.x ? 0 : (vector.y / max)|0
+        vector.z = vector.x || vector.y ? 0 : (vector.z / max)|0
+        return Math.abs(vector.x) ? 0 : Math.abs(vector.y) ? 1 : Math.abs(vector.z) ? 2 : -1
+    }
     reset() {
         this.active = null // cubelet clicked
         this.faceWorldNormal = null // clicked face of cubelet
-        this.point = null
+        this.start = null
         this.time = null
     }
-
+    /**
+     * 
+     * @param {import('three').Mesh} object 
+     * @returns 
+     */
     onMouseDown(event) {
         this.reset()
         const { intersection, object, faceWorldNormal, point } = this.getRaycastIntersection(event)
@@ -61,14 +75,15 @@ export default class CubeInteraction {
 
     onMouseMove(event) {
         if (!this.active) return;
-        const point = this.getRaycastIntersection(event)?.point
+        const { intersection, object, faceWorldNormal, point } = this.getRaycastIntersection(event)
         if (!point) return;
-
         const dragVector = point.clone().sub(this.start) // direction 
         const projected = dragVector.projectOnPlane(this.faceWorldNormal)
-        const axis = new Vector3().crossVectors(this.faceWorldNormal, projected)
+        const axis = new Vector3().crossVectors(this.faceWorldNormal, projected).normalize()
+        const index = this.snapVectorToBasis(axis)
+        const layer = object.position.toArray()[index] // is Float?
         const dot = axis.dot(dragVector)
         const angle = dot / this.cube.size * this.dragSpeed
-
+        this.cube.update(axis, layer, angle)
     }
 }

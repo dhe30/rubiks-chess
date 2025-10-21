@@ -1,4 +1,4 @@
-export default class Slices {
+export default class Slicer {
     constructor(cube) {
         this.cube = cube
         this.cache = {}

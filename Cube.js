@@ -1,5 +1,6 @@
 import * as THREE from 'three'
 import Cubelet from './Cubelet'
+import Slicer from './Slices'
 
 export default class Cube {
     constructor(scene, size) {
@@ -7,6 +8,7 @@ export default class Cube {
         this.size = size
         this.group = new THREE.group()
         this.initCubelets()
+        this.slicer = new Slicer(this)
     }
 
     initCubelets() {
@@ -20,18 +22,5 @@ export default class Cube {
                 }
             }
         }
-    }
-
-    // Returns an array of cubelets that need to be rotated
-    // POSSIBLY OPTIMIZE BY CACHING ALL SLICES -> need to remap indicies
-    getSlice(axis, layer) {
-        // check cache
-        const slice = []
-        // else, calculate new slice
-        for (let i = 0; i < this.cubelets.size(); i++) {
-            const cubelet = this.cubelets[i]
-            if (cubelet.position[axis] == layer) slice.push(cubelet)
-        }
-        return slice
     }
 }

@@ -1,12 +1,12 @@
 import * as THREE from 'three'
 import Cubelet from './Cubelet'
-import Slicer from './Slices'
+import Slicer from './Slicer'
 
 export default class Cube {
     constructor(scene, size) {
         this.cubelets = []
         this.size = size
-        this.group = new THREE.group()
+        this.group = new THREE.Group()
         this.initCubelets()
         this.slicer = new Slicer(this)
     }
@@ -22,5 +22,9 @@ export default class Cube {
                 }
             }
         }
+    }
+
+    update(axis, layer, angle) {
+        const slice = this.slicer.getSlice(axis, layer)
     }
 }

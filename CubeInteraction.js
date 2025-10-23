@@ -6,7 +6,7 @@ export default class CubeInteraction {
      * @param {Cube} cube
      */
     constructor(cube, container, renderer) {
-        this.cube = cube.group
+        this.cube = cube
         this.container = container 
         this.renderer = renderer
         this.mouse = new Vector2() // normalized device coordinates (NDC) formula https://stackoverflow.com/questions/58293221/convert-screen-coordinates-to-metals-normalized-device-coordinates
@@ -14,6 +14,7 @@ export default class CubeInteraction {
         this.dragSpeed = 1.3 // magic number from Chrome Cube Lab source couce https://github.com/devdude123/Chrome-Cube-Lab---Cuber/blob/master/cuber/src/scripts/interaction.js#L44 
         this.dragThreshold = 5
         this.cross = new Vector3()
+        this.dragVector = new Vector3()
     }
 
     /** 
@@ -82,6 +83,8 @@ export default class CubeInteraction {
         this.cube.slicer.slice.clear()
 
         this.axisDefined = false
+
+        this.angle = 0
     }
     /**
      * 
@@ -103,31 +106,42 @@ export default class CubeInteraction {
         if (!this.active) return;
         const point = this.getIntersectionOnPlane(event, this.plane)
         if (!point) return;
-        const dragVector = point.clone().sub(this.start) // direction 
+        const dragVector = this.dragVector.subVectors(point, this.start) // direction 
         const projected = dragVector.projectOnPlane(this.faceWorldNormal) // project drag vector onto face
         
         if (!this.axisDefined && dragVector.length() > this.dragThreshold) {
             const axis = new Vector3().crossVectors(this.faceWorldNormal, projected).normalize()
 
             // axis should snap to basis in cube local frame but is currently in world frame 
-            const cubeRotation = Matrix4().extractRotation(this.cube.matrixWorld)
+            const cubeRotation = Matrix4().extractRotation(this.cube.group.matrixWorld)
             const invCubeRotation = cubeRotation.clone().invert()
-            const cubeLocalAxis = axis.clone().applyMatrix4(invCubeRotation)
+            const cubeLocalAxis = axis.clone().applyMatrix4(invCubeRotation).normalize()
 
             const index = this.snapVectorToBasis(cubeLocalAxis) // snap axis and return axis as index
             const layer = Math.round(object.position.toArray()[index])
-            this.cube.slicer.getSlice(index, layer) // sets slice for rotation
+            this.cube.slicer.getSlice(index, layer, cubeLocalAxis) // sets slice for rotation
 
             // axis is snapped in cube local frame, now return to world frame (to be compatible with faceWorldNormal)
             this.axis = cubeLocalAxis.applyMatrix4(cubeRotation).normalize()
-            this.cross.crossVectors(this.axis, this.faceWorldNormal) // direction of rotation
+            this.cross.crossVectors(this.axis, this.faceWorldNormal) // set direction of rotation
+            
             this.axisDefined = true
         }
     
         if (this.axisDefined) {
             const dot = this.cross.dot(dragVector)
             const angle = dot / this.cube.size * this.dragSpeed
+            this.angle = angle // record to calculate snap on mouse up
             this.cube.slicer.update(angle) // updates slice defined in previous block 
         }
+    }
+
+    onMouseUp(event) {
+        const snappedAngle = Math.round((this.angle / (Math.PI / 2)) * (Math.PI / 2))
+        const interactionVelocity = this.dragVector.length() / (Date.now() - this.time)
+        if (interactionVelocity > 0.3) {
+            snappedAngle += this.cross.dot(this.dragVector.normalize()) > 0 ? (Math.PI / 2) : -(Math.PI / 2)
+        }
+        this.cube.slicer.end(snappedAngle)
     }
 }

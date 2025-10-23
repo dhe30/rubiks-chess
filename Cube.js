@@ -1,12 +1,16 @@
 import * as THREE from 'three'
 import Cubelet from './Cubelet'
 import Slicer from './Slicer'
-
 export default class Cube {
+    /**
+     * 
+     * @param {[Cubelet]} cubelets 
+     * @param {*} size 
+     */
     constructor(scene, size) {
         this.cubelets = []
         this.size = size
-        this.group = new THREE.Group()
+        this.object = new THREE.Group()
         this.initCubelets()
         this.slicer = new Slicer(this)
     }

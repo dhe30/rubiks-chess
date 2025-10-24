@@ -4,17 +4,38 @@ export default class CubeInteraction {
     /** 
      * @param {import('three').WebGLRenderer} renderer
      * @param {Cube} cube
+     * @param {HTMLElement} container
      */
-    constructor(cube, container, renderer) {
+    constructor(cube, container) {
         this.cube = cube
         this.container = container 
-        this.renderer = renderer
+        this.renderer = cube.renderer.renderer
+        this.camera = cube.renderer.camera
         this.mouse = new Vector2() // normalized device coordinates (NDC) formula https://stackoverflow.com/questions/58293221/convert-screen-coordinates-to-metals-normalized-device-coordinates
         this.raycaster = new Raycaster()
         this.dragSpeed = 1.3 // magic number from Chrome Cube Lab source couce https://github.com/devdude123/Chrome-Cube-Lab---Cuber/blob/master/cuber/src/scripts/interaction.js#L44 
-        this.dragThreshold = 5
+        this.dragThreshold = 0.5
         this.cross = new Vector3()
         this.dragVector = new Vector3()
+        this.initEventListeners()
+        this.isDragging = false
+    }
+
+    initEventListeners() {
+        this.container.addEventListener("mousedown", (e) => {
+            e.preventDefault();
+            // this.container.setPointerCapture(e.pointerId)
+            this.onMouseDown(e)
+        }, {passive:false})
+        this.container.addEventListener("mousemove", (e) => {
+            e.preventDefault();
+			e.stopImmediatePropagation();
+            this.onMouseMove(e)}
+        )
+        this.container.addEventListener("mouseup", (e) => {
+            // this.container.releasePointerCapture && this.container.releasePointerCapture(e.pointerId);
+            this.onMouseUp(e)
+        })
     }
 
     /** 
@@ -25,12 +46,12 @@ export default class CubeInteraction {
 
         // convert pixel coords to NDC (mapped onto near clipping plane)
         this.mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1
-        this.mouse.y = ((event.clientY - rect.top) / rect.height) * 2 - 1
+        this.mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1
 
         // ray from camera to NDC on near clipping plane (into scene)
         this.raycaster.setFromCamera(this.mouse, this.camera)
 
-        const intersects = this.raycaster.intersectObjects(this.cube.cubelets, true)
+        const intersects = this.raycaster.intersectObjects(this.cube.cubelets.map(c => c.object), true)
         if (!intersects.length) return null
 
         const intersection = intersects[0]
@@ -52,7 +73,7 @@ export default class CubeInteraction {
 
         // convert pixel coords to NDC (mapped onto near clipping plane)
         this.mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1
-        this.mouse.y = ((event.clientY - rect.top) / rect.height) * 2 - 1
+        this.mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1
 
         // ray from camera to NDC on near clipping plane (into scene)
         this.raycaster.setFromCamera(this.mouse, this.camera)
@@ -92,20 +113,26 @@ export default class CubeInteraction {
      * @returns 
      */
     onMouseDown(event) {
+        console.log("down")
         this.reset() // clears vars associated with previous mouse down event
         const { intersection, object, faceWorldNormal, point, plane } = this.getRaycastIntersection(event)
         if (!intersection) return;
+        console.log("not null!")
         this.active = object
         this.start = point
         this.faceWorldNormal = faceWorldNormal
         this.time = Date.now()
         this.plane = plane
+        this.isDragging = true
     }
 
     onMouseMove(event) {
+        if (!this.isDragging) return;
+        console.log("moving!")
         if (!this.active) return;
         const point = this.getIntersectionOnPlane(event, this.plane)
         if (!point) return;
+        // console.log("dragging!")
         const dragVector = this.dragVector.subVectors(point, this.start) // direction 
         const projected = dragVector.projectOnPlane(this.faceWorldNormal) // project drag vector onto face
         
@@ -113,12 +140,12 @@ export default class CubeInteraction {
             const axis = new Vector3().crossVectors(this.faceWorldNormal, projected).normalize()
 
             // axis should snap to basis in cube local frame but is currently in world frame 
-            const cubeRotation = Matrix4().extractRotation(this.cube.group.matrixWorld)
+            const cubeRotation = new Matrix4().extractRotation(this.cube.object.matrixWorld)
             const invCubeRotation = cubeRotation.clone().invert()
             const cubeLocalAxis = axis.clone().applyMatrix4(invCubeRotation).normalize()
 
             const index = this.snapVectorToBasis(cubeLocalAxis) // snap axis and return axis as index
-            const layer = Math.round(object.position.toArray()[index])
+            const layer = Math.round(this.active.position.toArray()[index])
             this.cube.slicer.getSlice(index, layer, cubeLocalAxis) // sets slice for rotation
 
             // axis is snapped in cube local frame, now return to world frame (to be compatible with faceWorldNormal)
@@ -137,11 +164,13 @@ export default class CubeInteraction {
     }
 
     onMouseUp(event) {
-        const snappedAngle = Math.round((this.angle / (Math.PI / 2)) * (Math.PI / 2))
+        this.isDragging = false
+        console.log("up")
+        let snappedAngle = Math.round( this.angle / Math.PI * 0.5 * 4.0 ) * Math.PI * 0.5
         const interactionVelocity = this.dragVector.length() / (Date.now() - this.time)
         if (interactionVelocity > 0.3) {
             snappedAngle += this.cross.dot(this.dragVector.normalize()) > 0 ? (Math.PI / 2) : -(Math.PI / 2)
         }
-        this.cube.slicer.end(snappedAngle)
+        this.cube.slicer.end(this.angle, snappedAngle)
     }
 }

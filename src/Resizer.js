@@ -13,7 +13,7 @@ export default class Resizer {
 
     onResize() {
         const { clientWidth, clientHeight } = this.container
-        this.camera.aspect = clientHeight / clientHeight
+        this.camera.aspect = clientWidth / clientHeight
         this.camera.updateProjectionMatrix()
         this.renderer.setSize(clientWidth, clientHeight)
     }

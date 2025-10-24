@@ -1,5 +1,16 @@
 {
+  "name": "rubiks",
   "dependencies": {
+    "@tweenjs/tween.js": "^25.0.0",
     "three": "^0.180.0"
-  }
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.28.3",
+    "@babel/core": "^7.28.5",
+    "@babel/preset-env": "^7.28.5"
+  },
+  "scripts": {
+    "build": "babel src --out-dir dist"
+  },
+  "main": "dist/Cube.js"
 }

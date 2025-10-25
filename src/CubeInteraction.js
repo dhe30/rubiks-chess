@@ -137,20 +137,25 @@ export default class CubeInteraction {
         const projected = dragVector.projectOnPlane(this.faceWorldNormal) // project drag vector onto face
         
         if (!this.axisDefined && dragVector.length() > this.dragThreshold) {
+            // axis of rotation (not perpendicular, so we need to snap to x, y, or z)
             const axis = new Vector3().crossVectors(this.faceWorldNormal, projected).normalize()
 
-            // axis should snap to basis in cube local frame but is currently in world frame 
+            // snapping is very easy if we're snapping to global x, y, z: +/-[1, 0, 0], +/-[0, 1, 0], +/-[0, 0, 1]
+            // but the cube might be rotated! so:
+            // we need to un-rotate the axis accoording to the cube's rotation, snap to the global axis, and re-rotate
             const cubeRotation = new Matrix4().extractRotation(this.cube.object.matrixWorld)
             const invCubeRotation = cubeRotation.clone().invert()
             const cubeLocalAxis = axis.clone().applyMatrix4(invCubeRotation).normalize()
 
             const index = this.snapVectorToBasis(cubeLocalAxis) // snap axis and return axis as index
             const layer = Math.round(this.active.position.toArray()[index])
-            this.cube.slicer.getSlice(index, layer, cubeLocalAxis) // sets slice for rotation
+            this.cube.slicer.getSlice(index, layer, cubeLocalAxis) // sets slice for rotation (slice is relative to the cube, so we use cubeLocalAxis)
 
-            // axis is snapped in cube local frame, now return to world frame (to be compatible with faceWorldNormal)
+            // return axis to the cube 
             this.axis = cubeLocalAxis.applyMatrix4(cubeRotation).normalize()
-            this.cross.crossVectors(this.axis, this.faceWorldNormal) // set direction of rotation
+
+            // direction of rotation (essentially drag vector but perpendicular)
+            this.cross.crossVectors(this.axis, this.faceWorldNormal) 
             
             this.axisDefined = true
         }

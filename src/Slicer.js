@@ -18,6 +18,7 @@ export default class Slicer {
         this.twistDuration = 500
     }
 
+    // DEPRECIATED! do not use
     // utility for keeping world transforms when reparenting (Object3D.attach())
     reparentAndBake(child, newParent) {
         const childWorldMatrix = child.matrixWorld.clone()
@@ -47,6 +48,7 @@ export default class Slicer {
         this.q.setFromAxisAngle(this.axis, angle)
         this.slice.quaternion.copy(this.q)
     }
+    
     radiansToDegrees(radians) {
         return radians * (180 / Math.PI);
     }

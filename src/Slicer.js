@@ -32,12 +32,13 @@ export default class Slicer {
     getSlice(axisIndex, layer, axis) {
         this.slice.clear()
         for (let i = 0; i < this.cube.cubelets.length; i++) {
-            const cubelet = this.cube.cubelets[i].object
-            if (cubelet.position.toArray()[axisIndex] == layer) {
+            const cubelet = this.cube.cubelets[i]
+            if (cubelet.object.position.toArray()[axisIndex] == layer) {
+                cubelet.isMapped = false
                 this.children.push(cubelet)
                 // we must transfer cubelets from the cube group to the slice group 
                 // cubelet.parent.remove(cubelet)
-                this.slice.attach(cubelet)
+                this.slice.attach(cubelet.object)
             }
         }
         console.log("Did we get the slice?", axisIndex, layer, this.children.length)
@@ -58,7 +59,8 @@ export default class Slicer {
         this.tween = null
     }
 
-    quantize(cubelet) {
+    quantize(cubeletRef) {
+        const cubelet = cubeletRef.object
         cubelet.position.x = Math.round(cubelet.position.x);
         cubelet.position.y = Math.round(cubelet.position.y);
         cubelet.position.z = Math.round(cubelet.position.z);
@@ -86,12 +88,14 @@ export default class Slicer {
                 this.cube.object.updateMatrixWorld(true)
                 console.log(this.children.length)
                 for (const cubelet of this.children) {
-                    cubelet.updateMatrixWorld(true)
+                    cubelet.object.updateMatrixWorld(true)
                     // cubelet.parent.remove(cubelet)
-                    this.cube.object.attach(cubelet)
-                    cubelet.updateMatrix();           
-                    cubelet.updateMatrixWorld(true);
+                    this.cube.object.attach(cubelet.object)
+                    cubelet.object.updateMatrix();           
+                    cubelet.object.updateMatrixWorld(true);
                     this.quantize(cubelet)
+
+                    // cubelet.setLogicalPosition(cubelet.object.position.toArray())
                 }
                 this.q.identity()
                 this.children = []
@@ -106,4 +110,7 @@ export default class Slicer {
     tick(delta) {
         this.tween.update()
     }
+
+    // convert this.axis to x, y, z value
+    
 }

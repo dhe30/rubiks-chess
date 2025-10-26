@@ -27,10 +27,10 @@ export default class Cube {
 
     initCubelets() {
         let offset = (this.size - 1) / 2
-        for (let i = 0; i < this.size; i++) {
-            for (let j = 0; j < this.size; j++) {
-                for (let k = 0; k < this.size; k++) {
-                    const cubelet = new Cubelet({i, j, k}, offset, this)
+        for (let x = 0; x < this.size; x++) {
+            for (let y = 0; y < this.size; y++) {
+                for (let z = 0; z < this.size; z++) {
+                    const cubelet = new Cubelet({x, y, z}, offset, this)
                     this.cubelets.push(cubelet)
                     this.object.add(cubelet.object)
                 }
@@ -44,4 +44,21 @@ export default class Cube {
         this.tweens.update(performance.now())
         this.renderer.render()
     }
+
+    mapToCube(face, x, y) {
+    switch (face) {
+        case "FRONT":
+            return {face: "front", x, y, z: this.size - 1}
+        case "BACK":
+            return {face: "back", x, y, z: 0}
+        case "LEFT":
+            return {face: "left", x: 0, y: x, z: y}
+        case "RIGHT":
+            return {face: "right", x: this.size - 1, y: x, z: y}
+        case "BOTTOM":
+            return {face: "bottom", x, y: 0, z: y}
+        case "TOP":
+            return {face: "top", x, y: this.size - 1, z: y}
+    }
+}
 }

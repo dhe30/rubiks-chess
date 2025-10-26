@@ -88,12 +88,16 @@ export default class Board {
             return this.topMove(x, y - step.y, commands)
         }
         if (y < 0) {
-            return this.bottomMove(x, this.size - y, commands)
+            return this.bottomMove(x, this.size + y, commands)
         }
         if (x >= this.size) {
             // flip and negate y
             this.flipNegateYNegateX(commands, true, false, true)
-            return this.
+            return this.rightMove(y, x - step.x, commands)
+        }
+        if (x < 0) {
+            this.flipNegateYNegateX(commands, true, false, true)
+            return this.leftMove(y, this.size + x, commands)
         }
 
         y += step.y
@@ -104,6 +108,12 @@ export default class Board {
         return 
     }
     bottomMove(x, y, commands) {
+        return 
+    }
+    rightMove(x, y, commands) {
+        return 
+    }
+    leftMove(x, y, commands) {
         return 
     }
 

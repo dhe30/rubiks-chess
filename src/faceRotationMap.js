@@ -110,4 +110,30 @@ export function mapToBoard(face, x, y, z) {
 }
 
 // map axis value and angle to faceRotationMap value
+// assume axis is normalized and local to the cube and angle +/- 90*
+export function rotationFromAngleAxis(axis, angle) {
+  let rotation = ""
+  if (axis.x < 0 || axis.y < 0 || axis.z < 0) {
+    axis.negate();
+    angle = -angle;
+  }
+
+  if (Math.round(axis.x) == 1) {
+    rotation += "x"
+  } else if (Math.round(axis.y) == 1) {
+    rotation += "y"
+  } else (Math.round(axis.z) == 1) {
+    rotation += "z"
+  }
+
+  if (angle > 0) {
+    rotation += "CW"
+  } else if (angle < 0) {
+    rotation += "CCW"
+  } else {
+    return null
+  }
+
+  return rotation
+}
 

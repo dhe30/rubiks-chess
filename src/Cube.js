@@ -4,6 +4,7 @@ import Slicer from './Slicer'
 import Renderer from './Renderer'
 import CubeInteraction from './CubeInteraction'
 import { Group } from '@tweenjs/tween.js'
+import Board from './Board'
 export default class Cube {
     /**
      * 
@@ -15,6 +16,9 @@ export default class Cube {
         this.tweens = new Group()
         this.clock = new THREE.Clock()
         this.size = size
+
+        // fix: board dependency on cube (also make it optional)
+        this.board = new Board(this)
         this.object = new THREE.Group()
         this.initCubelets()
         this.slicer = new Slicer(this)

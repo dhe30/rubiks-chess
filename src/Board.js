@@ -1,3 +1,4 @@
+import { mapToBoard } from "./faceRotationMap"
 import Tile from "./Tile"
 
 export default class Board {
@@ -63,6 +64,7 @@ export default class Board {
         }
     }
 
+    // x, y is 0-indexed for any board logic, -offset indexed for cube logic 
     frontMove(x, y, commands, onUpdate = () => {}, onComplete = () => {}) { // onUpdate and onComplete callbacks 
         if (!commands.length) {
             onComplete()
@@ -126,5 +128,10 @@ export default class Board {
             }
             face.push(row)
         }
+    }
+
+    getTileReference(face, positionArray) {
+        const mapping = mapToBoard(face, positionArray[0], positionArray[1], positionArray[2])
+        return this[mapping.face].tiles[mapping.x][mapping.y]
     }
 }

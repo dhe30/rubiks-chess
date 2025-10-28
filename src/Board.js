@@ -3,7 +3,7 @@ import Tile from "./Tile"
 export default class Board {
     constructor(cube) {
         this.cube = cube
-        this.size = cube.size
+        this.offset = (cube.size - 1) / 2
         const size = cube.size
         this.FRONT = {tiles: this.initFace(size)}
         this.BACK = {tiles: this.initFace(size)}

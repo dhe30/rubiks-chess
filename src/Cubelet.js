@@ -12,6 +12,15 @@ export default class Cubelet {
         this.object.position.set(position.x - offset, position.y - offset, position.z - offset)
         this.object.userData.logicalPosition = {...position}
         this.isMapped = false
+        
+        this.faces = {
+            front: null,
+            back: null,
+            left: null,
+            right: null,
+            top: null,
+            bottom: null
+        }
     }
 
     // sets isEdge, isFace, is 
@@ -36,12 +45,13 @@ export default class Cubelet {
     mapFaceRotation(face, rotation, record) {
         const prev = mapToBoard(face, ...this.object.userData.logicalPosition)
         const rotatedFace = faceRotationMap[rotation][face]
-        const next = mapToBoard(rotatedFace, this.object.position.x, this.object.position.y, this.object.position.z)
+        const twist = faceRotationMap[rotation].twist(this.object.position.x, this.object.position.y, this.object.position.z)
+        const next = mapToBoard(rotatedFace, twist.x, twist.y, twist.z)
 
-        record[this.bString(next)] = this.cube.board[prev.face].tiles[prev.x][prev.y]
+        record[this.bStringId(next)] = this.cube.board[prev.face].tiles[prev.x][prev.y]
     }
 
-    bString(a) {
+    bStringId(a) {
         return `${a.face} ${a.x} ${a.y}`
     }
 }

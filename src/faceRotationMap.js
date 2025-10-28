@@ -5,7 +5,14 @@ export default faceRotationMap = {
     back: "left",
     left: "front",
     top: "top",
-    bottom: "bottom"
+    bottom: "bottom",
+    twist: (x, y, z, offset = 0) => {
+      return {
+        x: z, 
+        y: y, 
+        z: -x + (2*offset)
+      }
+    }
   },
   yCCW: { // -90° around Y
     front: "left",
@@ -13,7 +20,14 @@ export default faceRotationMap = {
     back: "right",
     right: "front",
     top: "top",
-    bottom: "bottom"
+    bottom: "bottom",
+    twist: (x, y, z, offset = 0) => {
+      return {
+        x: -z + (2*offset), 
+        y: y, 
+        z: x
+      }
+    }
   },
   xCW: { // +90° around X
     top: "back",
@@ -21,7 +35,14 @@ export default faceRotationMap = {
     bottom: "front",
     front: "top",
     left: "left",
-    right: "right"
+    right: "right",
+    twist: (x, y, z, offset = 0) => {
+      return {
+        x: x, 
+        y: -z + (2*offset), 
+        z: y
+      }
+    }
   },
   xCCW: { // -90° around X
     top: "front",
@@ -29,7 +50,15 @@ export default faceRotationMap = {
     bottom: "back",
     back: "top",
     left: "left",
-    right: "right"
+    right: "right",
+    twist: (x, y, z, offset = 0) => {
+      return {
+        x: x, 
+        y: z, 
+        z: -y + (2*offset)
+      }
+    }
+    
   },
   zCW: { // +90° around Z
     top: "left",
@@ -37,7 +66,14 @@ export default faceRotationMap = {
     bottom: "right",
     right: "top",
     front: "front",
-    back: "back"
+    back: "back",
+    twist: (x, y, z, offset = 0) => {
+      return {
+        x: -y + (2*offset), 
+        y: x, 
+        z: z
+      }
+    }
   },
   zCCW: { // -90° around Z
     top: "right",
@@ -45,7 +81,14 @@ export default faceRotationMap = {
     bottom: "left",
     left: "top",
     front: "front",
-    back: "back"
+    back: "back",
+    twist: (x, y, z, offset = 0) => {
+      return {
+        x: y, 
+        y: -x + (2*offset), 
+        z: z
+      }
+    }
   }
 };
 

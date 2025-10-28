@@ -37,6 +37,7 @@ export default class Cube {
                     const cubelet = new Cubelet({x, y, z}, offset, this)
                     this.cubelets.push(cubelet)
                     this.object.add(cubelet.object)
+                    cubelet.initFaces(this.board)
                 }
             }
         }

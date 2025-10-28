@@ -1,6 +1,6 @@
 export default class Tile {
-    constructor() {
-        
+    constructor(value = "none") {
+        this.value = value
     }
 
     setIdentity() {

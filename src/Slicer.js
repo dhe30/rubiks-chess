@@ -1,6 +1,7 @@
 import { Euler, Group, Vector3 } from 'three'
 import { Tween, Easing } from '@tweenjs/tween.js';
 import Cube from './Cube';
+import { rotationFromAngleAxis } from './faceRotationMap';
 export default class Slicer {
     /**
      * 
@@ -87,6 +88,7 @@ export default class Slicer {
             .onComplete(() => {
                 this.cube.object.updateMatrixWorld(true)
                 console.log(this.children.length)
+                const records = {}
                 for (const cubelet of this.children) {
                     cubelet.object.updateMatrixWorld(true)
                     // cubelet.parent.remove(cubelet)
@@ -95,8 +97,15 @@ export default class Slicer {
                     cubelet.object.updateMatrixWorld(true);
                     this.quantize(cubelet)
 
-                    // cubelet.setLogicalPosition(cubelet.object.position.toArray())
+                    //remapping logic 
+                    if (targetAngle != 0) {
+                        //get rotation 
+                        const rotation = rotationFromAngleAxis(this.axis, targetAngle)
+                        cubelet.mapCubeletRotationOnBoard(rotation, records)
+                    }
+                    cubelet.setLogicalPosition(cubelet.object.position.toArray())
                 }
+                this.cube.board.bake(records)
                 this.q.identity()
                 this.children = []
                 // also remove from render loop:

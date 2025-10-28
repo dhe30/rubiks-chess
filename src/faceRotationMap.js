@@ -137,3 +137,17 @@ export function rotationFromAngleAxis(axis, angle) {
   return rotation
 }
 
+// functions for hashing 
+export function bStringId(a) {
+    return `${a.face} ${a.x} ${a.y}`
+}
+
+export function extractBCoords(a) {
+  const coords = a.split(" ")
+  return {
+    face: coords[0],
+    x: +coords[1],
+    y: +coords[2]
+  }
+}
+

@@ -1,4 +1,4 @@
-import { mapToBoard } from "./faceRotationMap"
+import { extractBCoords, mapToBoard } from "./faceRotationMap"
 import Tile from "./Tile"
 
 export default class Board {
@@ -6,12 +6,12 @@ export default class Board {
         this.cube = cube
         this.offset = (cube.size - 1) / 2
         const size = cube.size
-        this.FRONT = {tiles: this.initFace(size)}
-        this.BACK = {tiles: this.initFace(size)}
-        this.LEFT = {tiles: this.initFace(size)}
-        this.RIGHT = {tiles: this.initFace(size)}
-        this.TOP = {tiles: this.initFace(size)}
-        this.BOTTOM = {tiles: this.initFace(size)}
+        this.FRONT = {tiles: this.initFace(size, "FRONT")}
+        this.BACK = {tiles: this.initFace(size, "BACK")}
+        this.LEFT = {tiles: this.initFace(size, "LEFT")}
+        this.RIGHT = {tiles: this.initFace(size, "RIGHT")}
+        this.TOP = {tiles: this.initFace(size, "TOP")}
+        this.BOTTOM = {tiles: this.initFace(size, "BOTTOM")}
         
         // init neighbors 
         this.FRONT.up = this.TOP
@@ -30,7 +30,7 @@ export default class Board {
         this.LEFT.down = this.BACK
 
         this.RIGHT.up = this.TOP
-        this.RIGHT.left 
+        this.RIGHT.left = null
     }
 
     step(command) {
@@ -119,12 +119,12 @@ export default class Board {
         return 
     }
 
-    initFace(size) {
+    initFace(size, value = "none") {
         const face = []
         for (let i = 0; i < size; i++) {
             const row = []
             for (let j = 0; j < size; j++) {
-                row.push(new Tile())
+                row.push(new Tile(value))
             }
             face.push(row)
         }
@@ -133,5 +133,12 @@ export default class Board {
     getTileReference(face, positionArray) {
         const mapping = mapToBoard(face, positionArray[0], positionArray[1], positionArray[2])
         return this[mapping.face].tiles[mapping.x][mapping.y]
+    }
+
+    bake(records) {
+        for (const record of Object.keys(records)) {
+            const pos = extractBCoords(record)
+            this[pos.face].tiles[pos.x][pos.y] = records[record]
+        }
     }
 }

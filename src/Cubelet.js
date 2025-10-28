@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import faceRotationMap, { mapToBoard } from './faceRotationMap';
+import faceRotationMap, { bStringId, mapToBoard } from './faceRotationMap';
 import Cube from './Cube';
 // REFACTOR Cubelet class to extend Mesh and get rid of object field
 
@@ -16,7 +16,7 @@ export default class Cubelet {
         this.offset = offset
         this.object = new THREE.Mesh(geometry, material)
         this.object.position.set(position.x - offset, position.y - offset, position.z - offset)
-        this.object.userData.logicalPosition = {...position}
+        this.object.userData.logicalPosition = {...position} // redundant for computing position, but needed for storing stale position values when remapping board 
         this.isMapped = false
 
         this.faces = {
@@ -30,15 +30,22 @@ export default class Cubelet {
     }
 
     // sets isEdge, isFace, is 
-    initFaces() {
-        if (this.object.position.x === this.offset) this.faces.front = this.cube.
+    // should access board through cube or pass as argument?
+    initFaces(board) {
+        const position = Object.entries(this.object.userData.logicalPosition)
+        if (this.object.position.x === this.offset) this.faces.right = board.getTileReference("right", position)
+        if (this.object.position.x === -this.offset) this.faces.left = board.getTileReference("left", position)
+        if (this.object.position.y === this.offset) this.faces.top = board.getTileReference("top", position)
+        if (this.object.position.y === -this.offset) this.faces.bottom = board.getTileReference("bottom", position)
+        if (this.object.position.z === this.offset) this.faces.front = board.getTileReference("front", position)
+        if (this.object.position.z === -this.offset) this.faces.back = board.getTileReference("back", position)
     }
 
     setLogicalPosition(arr) {
         this.object.userData.logicalPosition = {
-            x: arr[0],
-            y: arr[1],
-            z: arr[2]
+            x: arr[0] + this.offset,
+            y: arr[1] + this.offset,
+            z: arr[2] + this.offset
         }
     }
 
@@ -58,10 +65,6 @@ export default class Cubelet {
         const twist = faceRotationMap[rotation].twist(this.object.position.x, this.object.position.y, this.object.position.z, this.offset)
         const next = mapToBoard(rotatedFace, twist.x, twist.y, twist.z)
 
-        record[this.bStringId(next)] = this.cube.board[prev.face].tiles[prev.x][prev.y]
-    }
-
-    bStringId(a) {
-        return `${a.face} ${a.x} ${a.y}`
+        record[bStringId(next)] = this.cube.board[prev.face].tiles[prev.x][prev.y]
     }
 }

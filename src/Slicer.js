@@ -100,7 +100,8 @@ export default class Slicer {
                     //remapping logic 
                     if (targetAngle != 0) {
                         //get rotation 
-                        const rotation = rotationFromAngleAxis(this.axis, targetAngle)
+                        const rotation = rotationFromAngleAxis(this.axis.clone(), targetAngle)
+                        // console.log(rotation, this.axis, targetAngle)
                         cubelet.mapCubeletRotationOnBoard(rotation, records)
                     }
                     cubelet.setLogicalPosition(cubelet.object.position.toArray())

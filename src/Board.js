@@ -128,16 +128,21 @@ export default class Board {
             }
             face.push(row)
         }
+        return face
     }
 
     getTileReference(face, positionArray) {
         const mapping = mapToBoard(face, positionArray[0], positionArray[1], positionArray[2])
+        // console.log(positionArray)
+        // console.log("mapping: ", mapping)
+        // console.log(this[mapping.face].tiles)
         return this[mapping.face].tiles[mapping.x][mapping.y]
     }
 
     bake(records) {
         for (const record of Object.keys(records)) {
             const pos = extractBCoords(record)
+            // console.log(record, pos)
             this[pos.face].tiles[pos.x][pos.y] = records[record]
         }
     }

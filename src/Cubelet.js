@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import faceRotationMap, { bStringId, mapToBoard } from './faceRotationMap';
+import { bStringId, mapToBoard, faceRotationMap } from './faceRotationMap';
 import Cube from './Cube';
 // REFACTOR Cubelet class to extend Mesh and get rid of object field
 
@@ -32,7 +32,7 @@ export default class Cubelet {
     // sets isEdge, isFace, is 
     // should access board through cube or pass as argument?
     initFaces(board) {
-        const position = Object.entries(this.object.userData.logicalPosition)
+        const position = Object.values(this.object.userData.logicalPosition)
         if (this.object.position.x === this.offset) this.faces.right = board.getTileReference("right", position)
         if (this.object.position.x === -this.offset) this.faces.left = board.getTileReference("left", position)
         if (this.object.position.y === this.offset) this.faces.top = board.getTileReference("top", position)
@@ -59,10 +59,11 @@ export default class Cubelet {
     }
 
     mapFaceRotation(face, rotation, record) {
-        const prev = mapToBoard(face, ...this.object.userData.logicalPosition)
+        const { x, y, z } = this.object.userData.logicalPosition
+        const prev = mapToBoard(face, x, y, z)
         const rotatedFace = faceRotationMap[rotation][face]
         // faceRotationMap returns 0-indexed positions only if given offset 
-        const twist = faceRotationMap[rotation].twist(this.object.position.x, this.object.position.y, this.object.position.z, this.offset)
+        const twist = faceRotationMap[rotation].twist(x, y, z, this.offset)
         const next = mapToBoard(rotatedFace, twist.x, twist.y, twist.z)
 
         record[bStringId(next)] = this.cube.board[prev.face].tiles[prev.x][prev.y]

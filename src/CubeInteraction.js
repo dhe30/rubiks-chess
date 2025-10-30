@@ -22,9 +22,7 @@ export default class CubeInteraction {
   }
 
   initEventListeners() {
-    this.container.addEventListener(
-      "mousedown",
-      (e) => {
+    this.container.addEventListener("mousedown", (e) => {
         e.preventDefault();
         // this.container.setPointerCapture(e.pointerId)
         this.onMouseDown(e);

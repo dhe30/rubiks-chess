@@ -109,6 +109,23 @@ export function mapToBoard(face, x, y, z) {
     }
 }
 
+export function mapToCube(face, x, y, size = 8) {
+  switch (face) {
+    case "FRONT":
+        return {face: "front", x, y, z: size - 1}
+    case "BACK":
+        return {face: "back", x, y, z: 0}
+    case "LEFT":
+        return {face: "left", x: 0, y: x, z: y}
+    case "RIGHT":
+        return {face: "right", x: size - 1, y: x, z: y}
+    case "BOTTOM":
+        return {face: "bottom", x, y: 0, z: y}
+    case "TOP":
+        return {face: "top", x, y: size - 1, z: y}
+  }
+}
+
 // map axis value and angle to faceRotationMap value
 // assume axis is normalized and local to the cube and angle +/- 90*
 export function rotationFromAngleAxis(axis, angle) {

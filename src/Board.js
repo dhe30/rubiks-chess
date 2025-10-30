@@ -69,6 +69,7 @@ export default class Board {
     return face;
   }
 
+  // both tile getters serve the same purpose, just exposed to different classes that store positions differently (3D vs 2D)
   getTileReference(face, positionArray) {
     const mapping = mapToBoard(
       face,
@@ -76,10 +77,11 @@ export default class Board {
       positionArray[1],
       positionArray[2]
     );
-    // console.log(positionArray)
-    // console.log("mapping: ", mapping)
-    // console.log(this[mapping.face].tiles)
     return this[mapping.face].tiles[mapping.x][mapping.y];
+  }
+
+  getTile(bcoor) {
+    return this[bcoor.face].tiles[bcoor.x][bcoor.y]
   }
 
   bake(records) {

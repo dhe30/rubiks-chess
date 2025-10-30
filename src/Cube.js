@@ -64,21 +64,4 @@ export default class Cube {
         this.tweens.update(performance.now())
         this.renderer.render()
     }
-
-    mapToCube(face, x, y) {
-    switch (face) {
-        case "FRONT":
-            return {face: "front", x, y, z: this.size - 1}
-        case "BACK":
-            return {face: "back", x, y, z: 0}
-        case "LEFT":
-            return {face: "left", x: 0, y: x, z: y}
-        case "RIGHT":
-            return {face: "right", x: this.size - 1, y: x, z: y}
-        case "BOTTOM":
-            return {face: "bottom", x, y: 0, z: y}
-        case "TOP":
-            return {face: "top", x, y: this.size - 1, z: y}
-    }
-}
 }

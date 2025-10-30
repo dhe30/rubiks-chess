@@ -1,6 +1,6 @@
 import { Vector3 } from "three";
 
-const faceVectors = {
+export const faceVectors = {
   front: new Vector3(0, 0, 1),
   left: new Vector3(-1, 0, 0),
   top: new Vector3(0, 1, 0),

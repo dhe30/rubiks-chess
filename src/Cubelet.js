@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import { bStringId, mapToBoard, faceRotationMap } from './faceRotationMap';
 import Cube from './Cube';
+import { faceVectors } from './utilities/utilities';
 // REFACTOR Cubelet class to extend Mesh and get rid of object field
 
 export default class Cubelet {
@@ -67,5 +68,11 @@ export default class Cubelet {
         const next = mapToBoard(rotatedFace, twist.x, twist.y, twist.z)
 
         record[bStringId(next)] = this.cube.board[prev.face].tiles[prev.x][prev.y]
+    }
+
+    tileFromFaceNormal(localNormal) {
+        for (const [face, vector] of Object.entries(faceVectors)) {
+            if (vector.equals(localNormal)) return this.faces[face]
+        }
     }
 }

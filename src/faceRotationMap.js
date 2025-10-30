@@ -154,3 +154,61 @@ export function extractBCoords(a) {
   }
 }
 
+// when a piece moves to another face, transform not only the commands, but the moves of the piece as well 
+const transitions = {
+  FRONT: {
+    up: { face: "TOP", transform: ([x, y]) => [x, -y] },
+    down: { face: "BOTTTOM", transform: ([x, y]) => [x, y] },
+    left: { face: "LEFT", transform: ([x, y]) => [y, -x] },
+    right: { face: "RIGHT", transform: ([x, y]) => [y, -x] }
+  },
+  LEFT: {
+    up: { face: "FRONT", transform: ([x, y]) => [y, x] },
+    down: { face: "BACK", transform: ([x, y]) => [-y, x] },
+    left: { face: "BOTTOM", transform: ([x, y]) => [-x, y] },
+    right: { face: "TOP", transform: ([x, y]) => [x, y] }
+  },
+  TOP: {
+    up: { face: "FRONT", transform: ([x, y]) => [x, -y] },
+    down: { face: "BACK", transform: ([x, y]) => [x, y] },
+    left: { face: "LEFT", transform: ([x, y]) => [x, y] },
+    right: { face: "RIGHT", transform: ([x, y]) => [x, -y] }
+  },
+  RIGHT: {
+    up: { face: "FRONT", transform: ([x, y]) => [-y, x] },
+    down: { face: "BACK", transform: ([x, y]) => [y, x] },
+    left: { face: "BOTTOM", transform: ([x, y]) => [x, y] },
+    right: { face: "TOP", transform: ([x, y]) => [-x, y] }
+  },
+  BOTTOM: {
+    up: { face: "FRONT", transform: ([x, y]) => [x, y] },
+    down: { face: "BACK", transform: ([x, y]) => [x, -y] },
+    left: { face: "LEFT", transform: ([x, y]) => [-x, y] },
+    right: { face: "RIGHT", transform: ([x, y]) => [x, y] }
+  },
+  BACK: {
+    up: { face: "TOP", transform: ([x, y]) => [x, y] },
+    down: { face: "BOTTOM", transform: ([x, y]) => [x, -y] },
+    left: { face: "LEFT", transform: ([x, y]) => [y, -x] },
+    right: { face: "RIGHT", transform: ([x, y]) => [y, x] }
+  },
+}
+
+function shouldTraverse(face, x, y) {
+  const size = 8
+  let direction = null
+  if (x < 0) {
+    direction = "left"
+  } else if (x >= size) {
+    direction = "right"
+  } else if (y < 0) {
+    direction = "down"
+  } else if (y >= size) {
+    direction = "up"
+  } else {
+    return direction
+  }
+  return transitions[face][direction]
+}
+
+

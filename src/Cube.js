@@ -19,11 +19,16 @@ export default class Cube {
 
         // fix: board dependency on cube (also make it optional)
         this.board = new Board(this)
+        this.tileToCubelet = new Map()
+
         this.object = new THREE.Group()
         this.initCubelets()
+        this.initCubeletFaces()
+        
         this.slicer = new Slicer(this)
         this.renderer = new Renderer(container, this.object)
         this.interaction = new CubeInteraction(this, container)
+
         console.log(this.cubelets.length)
         this.animate = this.animate.bind(this);
         this.animate();
@@ -37,7 +42,17 @@ export default class Cube {
                     const cubelet = new Cubelet({x, y, z}, offset, this)
                     this.cubelets.push(cubelet)
                     this.object.add(cubelet.object)
-                    cubelet.initFaces(this.board)
+                }
+            }
+        }
+    }
+
+    initCubeletFaces() {
+        for (const cubelet of this.cubelets) {
+            cubelet.initFaces(this.board)
+            for (const [face, tile] of Object.entries(cubelet.faces)) {
+                if (tile) {
+                    this.tileToCubelet.set(tile, {cubelet, face})
                 }
             }
         }

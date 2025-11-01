@@ -1,11 +1,13 @@
-import { extractBCoords, mapToBoard } from "./faceRotationMap";
+import { extractBCoords, mapToBoard, shouldTraverse } from "./faceRotationMap";
 import Tile from "./Tile";
+import { boundPos } from "./utilities/utilities";
 
 export default class Board {
   constructor(cube) {
     this.cube = cube;
     this.offset = (cube.size - 1) / 2;
     const size = cube.size;
+    this.bound = boundPos(0, size) // exlusive of size (bouned to size - 1)
     this.FRONT = { tiles: this.initFace(size, "FRONT") };
     this.BACK = { tiles: this.initFace(size, "BACK") };
     this.LEFT = { tiles: this.initFace(size, "LEFT") };
@@ -47,6 +49,37 @@ export default class Board {
     }
     return res;
   }
+
+  walk(pos, commands, stepFn, visited) {
+    for (const direction of commands) {
+      while (Math.abs(direction[0]) > 0 || Math.abs(direction[1]) > 0) {
+        const step = step(direction)
+        pos.x += step.x
+        pos.y += step.y
+        const traversal = shouldTraverse(pos.face, pos.x, pos.y)
+        if (traversal) {
+          const { face, transform, flip } = traversal
+          this.bound(pos)
+          if (flip) {
+            const tmp = pos.x
+            pos.y = pos.y
+            pos.x = tmp
+          }
+          pos.face = face
+          for (const command of commands) {
+            transform(command)
+          }
+        }
+      }
+    }
+  }
+  
+  walkAll(bcoor, commands, stepFn) {
+    for (const command of commands) {
+      walk({...bcoor}, [...command], stepFn, new Set())
+    }
+  }
+
 
   diagonalAtCorner(x, y) {
     return (

@@ -9,4 +9,18 @@ export const faceVectors = {
   back: new Vector3(0, 0, -1)
 }
 
+export const boundPos = (min, max) => (bcoor) => {
+    if (bcoor.x < min) {
+      bcoor.x = min
+    } else if (bcoor.x >= max) {
+      bcoor.x = (max - 1)
+    }
+
+    if (bcoor.y < min) {
+      bcoor.y = min
+    } else if (bcoor.y >= max) {
+      bcoor.y = (max - 1)
+    }
+  }
+
 getTileFromNormal(cubelet, normal)

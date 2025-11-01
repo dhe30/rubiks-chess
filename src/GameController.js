@@ -1,12 +1,22 @@
+import Board from "./Board"
+import Piece from "./Piece"
+
 export default class GameController {
 
+    /**
+     * 
+     * @param {Board} board 
+     * @param {[Piece]} groups 
+     */
     constructor(board, groups) {
         this.board = board
         this.groups = groups
         this.setupPieces()
         this.legalMoves = []
-
         this.players = groups.size()
+        for (let i = 0; i < this.players; i++) {
+            this.legalMoves.push(new Map())
+        }
         this.turn = -1 // 0-indexed
     }
 
@@ -18,7 +28,24 @@ export default class GameController {
         }
     }
 
-    getLegalMoves(player) {
+    /**
+     * @param {Piece} piece 
+     */
+
+    move(from, to, transform) { // tile objects
+        // calculate transform from cube local face normals in cubeInteraction (BFS on transitions (two layers max)
+        // move piece from from to to tile, and transform piece commands based on transform param
+    }
+
+    boundedWalk(bcoor, record) {
+        // if tile at bcoor has a piece, terminate walk (if different group, add tile to record else do nothing)
+    }
+
+    getLegalMoves(piece) {
+        this.board.walkAll(piece.position, piece.commands, () => {})
+    }
+
+    getAllLegalMoves(player) {
         // for each piece in groups[player]:
         // extract piece.commands 
         // call board api with piece.position, piece.commands and lambda getLegal()
@@ -26,6 +53,6 @@ export default class GameController {
 
     endTurn() {
         this.turn = (this.turn + 1) % this.players
-        this.getLegalMoves(this.turn)
+        this.getAllLegalMoves(this.turn)
     }
 }

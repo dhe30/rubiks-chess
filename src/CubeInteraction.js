@@ -1,5 +1,6 @@
 import { Vector2, Matrix4, Raycaster, Vector3, Plane } from "three";
 import Cube from "./Cube";
+import { getFaceFromNormal } from "./utilities/utilities";
 export default class CubeInteraction {
   /**
    * @param {import('three').WebGLRenderer} renderer
@@ -19,6 +20,7 @@ export default class CubeInteraction {
     this.dragVector = new Vector3();
     this.initEventListeners();
     this.isDragging = false;
+
   }
 
   initEventListeners() {
@@ -54,7 +56,7 @@ export default class CubeInteraction {
     this.raycaster.setFromCamera(this.mouse, this.camera);
 
     const intersects = this.raycaster.intersectObjects(
-      this.cube.cubelets.map((c) => c.object),
+      this.cube.cubelets.map((c) => c), // Refactor if map is not needed
       true
     );
     if (!intersects.length) return null;
@@ -74,6 +76,7 @@ export default class CubeInteraction {
       intersection,
       object: cubelet,
       faceWorldNormal,
+      faceLocalNormal : intersection.face.normal,
       point,
       plane,
     };
@@ -135,13 +138,14 @@ export default class CubeInteraction {
   onMouseDown(event) {
     console.log("down");
     this.reset(); // clears vars associated with previous mouse down event
-    const { intersection, object, faceWorldNormal, point, plane } =
+    const { intersection, object, faceWorldNormal, faceLocalNormal, point, plane } =
       this.getRaycastIntersection(event);
     if (!intersection) return;
     console.log("not null!");
     this.active = object;
     this.start = point;
     this.faceWorldNormal = faceWorldNormal;
+    this.faceLocalNormal = faceLocalNormal;
     this.time = Date.now();
     this.plane = plane;
     this.isDragging = true;
@@ -210,6 +214,26 @@ export default class CubeInteraction {
       this.cube.slicer.end(this.angle, snappedAngle);
     } else {
         // no drag, procced as tile click event
+        if (!this.active) return 
+        const clickedTile = this.active.tileFromFaceNormal(this.faceLocalNormal)
+        const face = getCubeFaceFromNormal(this.active, this.faceLocalNormal)
+        gameLoop(clickedTile, face)
+    }
+  }
+
+  gameLoop(clickTile, face) {
+    if (this.highlighted) {
+
+    } else {
+      this.highlighted = true
+      // clickTile.piece.group 
+    }
+  }
+
+  highLightAll(tileList) {
+    for (const tile of tileList) {
+      const { cubelet, face } = this.cube.tileToCubelet.get(tile)
+      cubelet.highight(face)
     }
   }
 }

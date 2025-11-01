@@ -3,10 +3,10 @@ import Tile from "./Tile";
 import { boundPos } from "./utilities/utilities";
 
 export default class Board {
-  constructor(cube) {
-    this.cube = cube;
-    this.offset = (cube.size - 1) / 2;
-    const size = cube.size;
+  constructor(size) {
+    // this.cube = cube;
+    this.offset = (size - 1) / 2;
+    const size = size;
     this.bound = boundPos(0, size) // exlusive of size (bouned to size - 1)
     this.FRONT = { tiles: this.initFace(size, "FRONT") };
     this.BACK = { tiles: this.initFace(size, "BACK") };
@@ -16,23 +16,7 @@ export default class Board {
     this.BOTTOM = { tiles: this.initFace(size, "BOTTOM") };
 
     // init neighbors
-    this.FRONT.up = this.TOP;
-    this.FRONT.left = this.LEFT;
-    this.FRONT.right = this.RIGHT;
-    this.FRONT.down = this.BOTTOM;
 
-    this.BACK.up = this.TOP;
-    this.BACK.left = this.LEFT;
-    this.BACK.right = this.RIGHT;
-    this.BACK.down = this.BOTTOM;
-
-    this.LEFT.up = this.FRONT;
-    this.LEFT.left = this.BOTTOM;
-    this.LEFT.right = this.TOP;
-    this.LEFT.down = this.BACK;
-
-    this.RIGHT.up = this.TOP;
-    this.RIGHT.left = null;
   }
 
   step(command) {
@@ -57,7 +41,8 @@ export default class Board {
         pos.x += step.x
         pos.y += step.y
         const traversal = shouldTraverse(pos.face, pos.x, pos.y)
-        if (traversal) {
+        
+        if (traversal) { // change pos and commands to preserve canonical directions for new face frame
           const { face, transform, flip } = traversal
           this.bound(pos)
           if (flip) {
@@ -70,8 +55,14 @@ export default class Board {
             transform(command)
           }
         }
+        // get tile at pos and check visited set 
+        
+        // invoke step function 
       }
     }
+
+    // invoke on complete function 
+
   }
   
   walkAll(bcoor, commands, stepFn) {

@@ -11,19 +11,19 @@ export default class Cube {
      * @param {[Cubelet]} cubelets 
      * @param {*} size 
      */
-    constructor(container, size = 3) {
+    constructor(container, size = 3, gameController = null) {
         this.cubelets = []
         this.tweens = new Group()
         this.clock = new THREE.Clock()
         this.size = size
 
         // fix: board dependency on cube (also make it optional)
-        this.board = new Board(this)
+        this.board = gameController?.board
         this.tileToCubelet = new Map()
 
         this.object = new THREE.Group()
         this.initCubelets()
-        this.initCubeletFaces()
+        if (board) this.initCubeletFaces()
         
         this.slicer = new Slicer(this)
         this.renderer = new Renderer(container, this.object)
@@ -41,7 +41,7 @@ export default class Cube {
                 for (let z = 0; z < this.size; z++) {
                     const cubelet = new Cubelet({x, y, z}, offset, this)
                     this.cubelets.push(cubelet)
-                    this.object.add(cubelet.object)
+                    this.object.add(cubelet)
                 }
             }
         }

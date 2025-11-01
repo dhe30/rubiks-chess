@@ -34,12 +34,12 @@ export default class Slicer {
         this.slice.clear()
         for (let i = 0; i < this.cube.cubelets.length; i++) {
             const cubelet = this.cube.cubelets[i]
-            if (cubelet.object.position.toArray()[axisIndex] == layer) {
+            if (cubelet.position.toArray()[axisIndex] == layer) {
                 cubelet.isMapped = false
                 this.children.push(cubelet)
                 // we must transfer cubelets from the cube group to the slice group 
                 // cubelet.parent.remove(cubelet)
-                this.slice.attach(cubelet.object)
+                this.slice.attach(cubelet)
             }
         }
         console.log("Did we get the slice?", axisIndex, layer, this.children.length)
@@ -60,8 +60,7 @@ export default class Slicer {
         this.tween = null
     }
 
-    quantize(cubeletRef) {
-        const cubelet = cubeletRef.object
+    quantize(cubelet) {
         cubelet.position.x = Math.round(cubelet.position.x);
         cubelet.position.y = Math.round(cubelet.position.y);
         cubelet.position.z = Math.round(cubelet.position.z);
@@ -90,23 +89,23 @@ export default class Slicer {
                 console.log(this.children.length)
                 const records = {}
                 for (const cubelet of this.children) {
-                    cubelet.object.updateMatrixWorld(true)
+                    cubelet.updateMatrixWorld(true)
                     // cubelet.parent.remove(cubelet)
                     this.cube.object.attach(cubelet.object)
-                    cubelet.object.updateMatrix();           
-                    cubelet.object.updateMatrixWorld(true);
+                    cubelet.updateMatrix();           
+                    cubelet.updateMatrixWorld(true);
                     this.quantize(cubelet)
 
                     //remapping logic 
-                    if (targetAngle != 0) {
+                    if (targetAngle != 0 && this.cube.board) {
                         //get rotation 
                         const rotation = rotationFromAngleAxis(this.axis.clone(), targetAngle)
                         // console.log(rotation, this.axis, targetAngle)
                         cubelet.mapCubeletRotationOnBoard(rotation, records)
                     }
-                    cubelet.setLogicalPosition(cubelet.object.position.toArray())
+                    cubelet.setLogicalPosition(cubelet.position.toArray())
                 }
-                this.cube.board.bake(records)
+                this.cube.board?.bake(records)
                 this.q.identity()
                 this.children = []
                 // also remove from render loop:

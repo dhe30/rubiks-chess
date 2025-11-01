@@ -8,7 +8,7 @@ export default class GameController {
      * @param {Board} board 
      * @param {[Piece]} groups 
      */
-    constructor(board, groups) {
+    constructor(board, groups = []) {
         this.board = board
         this.groups = groups
         this.setupPieces()
@@ -24,6 +24,7 @@ export default class GameController {
         for (const group of groups) {
             for (const piece of group) {
                 this.board.getTile(piece.position).place(piece)
+                // set piece's group field 
             }
         }
     }

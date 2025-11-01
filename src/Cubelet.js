@@ -4,7 +4,7 @@ import Cube from './Cube';
 import { faceVectors } from './utilities/utilities';
 // REFACTOR Cubelet class to extend Mesh and get rid of object field
 
-export default class Cubelet {
+export default class Cubelet extends THREE.Mesh{
     /**
      * @param {Cube} cube
      */
@@ -13,11 +13,12 @@ export default class Cubelet {
         const randomIndex = Math.floor(Math.random() * arr.length);
         const geometry = new THREE.BoxGeometry(1, 1, 1)
         const material = new THREE.MeshBasicMaterial({ color: arr[randomIndex] })
+        super(geometry, material)
         this.cube = cube
         this.offset = offset
-        this.object = new THREE.Mesh(geometry, material)
-        this.object.position.set(position.x - offset, position.y - offset, position.z - offset)
-        this.object.userData.logicalPosition = {...position} // redundant for computing position, but needed for storing stale position values when remapping board 
+        // this.object = new THREE.Mesh(geometry, material)
+        this.position.set(position.x - offset, position.y - offset, position.z - offset)
+        this.userData.logicalPosition = {...position} // redundant for computing position, but needed for storing stale position values when remapping board 
         this.isMapped = false
 
         this.faces = {
@@ -33,17 +34,17 @@ export default class Cubelet {
     // sets isEdge, isFace, is 
     // should access board through cube or pass as argument?
     initFaces(board) {
-        const position = Object.values(this.object.userData.logicalPosition)
-        if (this.object.position.x === this.offset) this.faces.right = board.getTileReference("right", position)
-        if (this.object.position.x === -this.offset) this.faces.left = board.getTileReference("left", position)
-        if (this.object.position.y === this.offset) this.faces.top = board.getTileReference("top", position)
-        if (this.object.position.y === -this.offset) this.faces.bottom = board.getTileReference("bottom", position)
-        if (this.object.position.z === this.offset) this.faces.front = board.getTileReference("front", position)
-        if (this.object.position.z === -this.offset) this.faces.back = board.getTileReference("back", position)
+        const position = Object.values(this.userData.logicalPosition)
+        if (this.position.x === this.offset) this.faces.right = board.getTileReference("right", position)
+        if (this.position.x === -this.offset) this.faces.left = board.getTileReference("left", position)
+        if (this.position.y === this.offset) this.faces.top = board.getTileReference("top", position)
+        if (this.position.y === -this.offset) this.faces.bottom = board.getTileReference("bottom", position)
+        if (this.position.z === this.offset) this.faces.front = board.getTileReference("front", position)
+        if (this.position.z === -this.offset) this.faces.back = board.getTileReference("back", position)
     }
 
     setLogicalPosition(arr) {
-        this.object.userData.logicalPosition = {
+        this.userData.logicalPosition = {
             x: arr[0] + this.offset,
             y: arr[1] + this.offset,
             z: arr[2] + this.offset
@@ -60,7 +61,7 @@ export default class Cubelet {
     }
 
     mapFaceRotation(face, rotation, record) {
-        const { x, y, z } = this.object.userData.logicalPosition
+        const { x, y, z } = this.userData.logicalPosition
         const prev = mapToBoard(face, x, y, z)
         const rotatedFace = faceRotationMap[rotation][face]
         // faceRotationMap returns 0-indexed positions only if given offset 
@@ -74,5 +75,9 @@ export default class Cubelet {
         for (const [face, vector] of Object.entries(faceVectors)) {
             if (vector.equals(localNormal)) return this.faces[face]
         }
+    }
+
+    highlight(face) {
+        // lights up local face 
     }
 }

@@ -29,6 +29,8 @@ export default class Cubelet extends THREE.Mesh{
             top: null,
             bottom: null
         }
+
+        this.dirty = false // track outdated tile renders
     }
 
     // sets isEdge, isFace, is 
@@ -79,5 +81,9 @@ export default class Cubelet extends THREE.Mesh{
 
     highlight(face) {
         // lights up local face 
+    }
+
+    renderTiles() {
+        // change this.faces into an object with tile and render fields
     }
 }

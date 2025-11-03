@@ -96,7 +96,8 @@ export default class Slicer {
                     cubelet.updateMatrixWorld(true);
                     this.quantize(cubelet)
 
-                    //remapping logic 
+                    // remapping logic 
+                    // REFACTOR: move to cube interaction to allow game logic simulation 
                     if (targetAngle != 0 && this.cube.board) {
                         //get rotation 
                         const rotation = rotationFromAngleAxis(this.axis.clone(), targetAngle)

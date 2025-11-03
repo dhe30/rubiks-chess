@@ -1,14 +1,24 @@
 import { Vector2, Matrix4, Raycaster, Vector3, Plane } from "three";
 import Cube from "./Cube";
 import { getFaceFromNormal } from "./utilities/utilities";
+import GameController from "./GameController";
 export default class CubeInteraction {
   /**
    * @param {import('three').WebGLRenderer} renderer
    * @param {Cube} cube
    * @param {HTMLElement} container
+   * @param {GameController} gameController
    */
-  constructor(cube, container) {
+  constructor(cube, container, gameController) {
     this.cube = cube;
+    this.gameController = gameController;
+    this.prevState = {
+      tile: null,
+      face: null,
+      cubelet: null
+    }
+
+
     this.container = container;
     this.renderer = cube.renderer.renderer;
     this.camera = cube.renderer.camera;
@@ -205,35 +215,72 @@ export default class CubeInteraction {
     if (this.axisDefined) {
       let snappedAngle = Math.round((this.angle / Math.PI) * 0.5 * 4.0) * Math.PI * 0.5;
       const interactionVelocity =this.dragVector.length() / (Date.now() - this.time);
+      // NOTE: if gameController is activated, only 90* turns are permitted and interaction velocity doesn't add additional turns
       if (interactionVelocity > 0.3) {
         snappedAngle +=
           this.cross.dot(this.dragVector.normalize()) > 0
             ? Math.PI / 2
             : -(Math.PI / 2);
       }
+
+      //REFACTOR: add remapping simulation and baking here instead of in Slicer
+
       this.cube.slicer.end(this.angle, snappedAngle);
-    } else {
+    } else { // ADD CONDITIONAL: if not rotating cube
         // no drag, procced as tile click event
-        if (!this.active) return 
+        if (!this.active) {
+          this.clearGameState()
+          return
+        } 
         const clickedTile = this.active.tileFromFaceNormal(this.faceLocalNormal)
         const face = getCubeFaceFromNormal(this.active, this.faceLocalNormal)
         gameLoop(clickedTile, face)
     }
   }
 
-  gameLoop(clickTile, face) {
+  clearGameState() {
+    this.prev.tile = null
+    this.prev.face = null
+    this.prev.cubelet = null
     if (this.highlighted) {
+      this.toggleHighlights(this.highlighted, false)
+    }
+    this.highlighted = null
+  }
 
+  gameLoop(tile, face) {
+    if (this.highlighted) {
+      if(this.highlighted.has(tile)) { // click legal move
+        this.gameController.move(this.prev.tile, this.prev.face, tile, face)
+        this.endTurn()
+      } else if (tile.piece && tile.piece.group == this.gameController.turn) { // click another piece
+        this.clearGameState()
+        this.highlighted = this.gameController.getMoves(tile)
+        this.toggleHighlights(this.highlighted)
+      } else { // click random tile 
+        this.clearGameState()
+        return
+      }
     } else {
-      this.highlighted = true
-      // clickTile.piece.group 
+      this.highlighted = this.gameController.getMoves(tile)
+      this.toggleHighlights(this.highlighted)
+    
     }
   }
 
-  highLightAll(tileList) {
+  toggleHighlights(tileList, on = true) {
     for (const tile of tileList) {
       const { cubelet, face } = this.cube.tileToCubelet.get(tile)
-      cubelet.highight(face)
+      if (on) {
+        cubelet.highight(face)
+      } else {
+        cubelet.unhighlight(face)
+      }
     }
+  }
+
+  endTurn() {
+    this.gameController.endTurn()
+    this.clearGameState()
   }
 }

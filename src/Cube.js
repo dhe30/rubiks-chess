@@ -5,11 +5,13 @@ import Renderer from './Renderer'
 import CubeInteraction from './CubeInteraction'
 import { Group } from '@tweenjs/tween.js'
 import Board from './Board'
+import GameController from './GameController'
 export default class Cube {
     /**
      * 
      * @param {[Cubelet]} cubelets 
      * @param {*} size 
+     * @param {GameController} gameController
      */
     constructor(container, size = 3, gameController = null) {
         this.cubelets = []
@@ -27,7 +29,7 @@ export default class Cube {
         
         this.slicer = new Slicer(this)
         this.renderer = new Renderer(container, this.object)
-        this.interaction = new CubeInteraction(this, container)
+        this.interaction = new CubeInteraction(this, container. gameController)
 
         console.log(this.cubelets.length)
         this.animate = this.animate.bind(this);

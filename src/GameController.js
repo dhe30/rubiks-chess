@@ -1,5 +1,6 @@
 import Board from "./Board"
 import Piece from "./Piece"
+import { boundedWalk } from "./utilities/utilities"
 
 export default class GameController {
 
@@ -14,8 +15,12 @@ export default class GameController {
         this.setupPieces()
         this.legalMoves = []
         this.players = groups.size()
-        for (let i = 0; i < this.players; i++) {
-            this.legalMoves.push(new Map())
+        for (const group of groups) {
+            const map = new Map()
+            for (const piece of group) {
+                map.set(piece.id, new Set())
+            }
+            this.legalMoves.push(map)
         }
         this.turn = -1 // 0-indexed
     }
@@ -33,23 +38,28 @@ export default class GameController {
      * @param {Piece} piece 
      */
 
-    move(from, to, transform) { // tile objects
+    move(from, fromFace, to, toFace) { // tile objects
         // calculate transform from cube local face normals in cubeInteraction (BFS on transitions (two layers max)
         // move piece from from to to tile, and transform piece commands based on transform param
     }
 
-    boundedWalk(bcoor, record) {
-        // if tile at bcoor has a piece, terminate walk (if different group, add tile to record else do nothing)
+    getMoves(piece) {
+        return this.legalMoves[piece.group][piece.id]
     }
 
-    getLegalMoves(piece) {
-        this.board.walkAll(piece.position, piece.commands, () => {})
+    findLegalMoves(piece) {
+        const legalSet = this.getMoves(piece)
+        legalSet.clear()
+        this.board.walkAll(piece.position, piece.commands, boundedWalk(legalSet))
     }
 
-    getAllLegalMoves(player) {
+    findAllLegalMoves(player) {
         // for each piece in groups[player]:
         // extract piece.commands 
         // call board api with piece.position, piece.commands and lambda getLegal()
+        for (const piece of this.groups[player]) {
+            this.findLegalMoves(piece)
+        }
     }
 
     endTurn() {

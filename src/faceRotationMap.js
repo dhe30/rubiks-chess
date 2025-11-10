@@ -185,61 +185,71 @@ function negateAndFlip(command, negateX, negateY, flip) {
     command[1] = tmp
   }
 } 
-// when a piece moves to another face, transform not only the commands, but the moves of the piece as well 
-const transitions = {
+// when a piece moves to another face, transform not only the commands, but the piece.moves as well 
+export const transitions = {
   FRONT: {
-    up: { face: "TOP", transform: (pos) => negateAndFlip(pos, false, true, false), flip: false },
-    down: { face: "BOTTTOM", transform: (pos) => {}, flip: false },
-    left: { face: "LEFT", transform: (pos) => negateAndFlip(pos, true, false, true), flip: true },
-    right: { face: "RIGHT", transform: (pos) => negateAndFlip(pos, true, false, true), flip: true }
+    up: { face: "TOP", transform: (pos) => negateAndFlip(pos, false, true, false), orient: ([x, y]) =>  [x, Number.POSITIVE_INFINITY] },
+    down: { face: "BOTTTOM", transform: (pos) => {}, orient: ([x, y]) =>  [x, Number.POSITIVE_INFINITY] },
+    left: { face: "LEFT", transform: (pos) => negateAndFlip(pos, true, false, true), orient: ([x, y]) =>  [y, Number.POSITIVE_INFINITY] },
+    right: { face: "RIGHT", transform: (pos) => negateAndFlip(pos, true, false, true), orient: ([x, y]) =>  [Number.POSITIVE_INFINITY, y] }
   },
   LEFT: {
-    up: { face: "FRONT", transform: (pos) => negateAndFlip(pos, false, false, true), flip: true },
-    down: { face: "BACK", transform: (pos) => negateAndFlip(pos, false, true, true), flip: true },
-    left: { face: "BOTTOM", transform: (pos) => negateAndFlip(pos, true, false, false), flip: false },
-    right: { face: "TOP", transform: (pos) => {}, flip: false }
+    up: { face: "FRONT", transform: (pos) => negateAndFlip(pos, false, false, true), orient: ([x, y]) =>  [0, x] },
+    down: { face: "BACK", transform: (pos) => negateAndFlip(pos, false, true, true), orient: ([x, y]) =>  [0, x] },
+    left: { face: "BOTTOM", transform: (pos) => negateAndFlip(pos, true, false, false), orient: ([x, y]) =>  [0, y] },
+    right: { face: "TOP", transform: (pos) => {}, orient: ([x, y]) =>  [0, y] }
   },
   TOP: {
-    up: { face: "FRONT", transform: (pos) => negateAndFlip(pos, false, true, false), flip: false },
-    down: { face: "BACK", transform: (pos) => {}, flip: false },
-    left: { face: "LEFT", transform: (pos) => {}, flip: false },
-    right: { face: "RIGHT", transform: (pos) => negateAndFlip(pos, false, true, false), flip: false }
+    up: { face: "FRONT", transform: (pos) => negateAndFlip(pos, false, true, false), orient: ([x, y]) =>  [x, Number.POSITIVE_INFINITY] },
+    down: { face: "BACK", transform: (pos) => {}, orient: ([x, y]) =>  [x, Number.POSITIVE_INFINITY] },
+    left: { face: "LEFT", transform: (pos) => {}, orient: ([x, y]) =>  [Number.POSITIVE_INFINITY, y] },
+    right: { face: "RIGHT", transform: (pos) => negateAndFlip(pos, false, true, false), orient: ([x, y]) =>  [Number.POSITIVE_INFINITY, y] }
   },
   RIGHT: {
-    up: { face: "FRONT", transform: (pos) => negateAndFlip(pos, false, true, true), flip: true },
-    down: { face: "BACK", transform: (pos) => negateAndFlip(pos, false, false, true), flip: true },
-    left: { face: "BOTTOM", transform: (pos) => {}, flip: false },
-    right: { face: "TOP", transform: (pos) => negateAndFlip(pos, true, false, false), flip: false }
+    up: { face: "FRONT", transform: (pos) => negateAndFlip(pos, false, true, true), orient: ([x, y]) =>  [Number.POSITIVE_INFINITY, x] },
+    down: { face: "BACK", transform: (pos) => negateAndFlip(pos, false, false, true), orient: ([x, y]) =>  [Number.POSITIVE_INFINITY, x] },
+    left: { face: "BOTTOM", transform: (pos) => {}, orient: ([x, y]) =>  [Number.POSITIVE_INFINITY, y] },
+    right: { face: "TOP", transform: (pos) => negateAndFlip(pos, true, false, false), orient: ([x, y]) =>  [Number.POSITIVE_INFINITY, y] }
   },
   BOTTOM: {
-    up: { face: "FRONT", transform: (pos) => {}, flip: false },
-    down: { face: "BACK", transform: (pos) => negateAndFlip(pos, false, true, false), flip: false },
-    left: { face: "LEFT", transform: (pos) => negateAndFlip(pos, true, false, false), flip: false },
-    right: { face: "RIGHT", transform: (pos) => {}, flip: false }
+    up: { face: "FRONT", transform: (pos) => {}, orient: ([x, y]) =>  [x, 0] },
+    down: { face: "BACK", transform: (pos) => negateAndFlip(pos, false, true, false), orient: ([x, y]) =>  [x, 0] },
+    left: { face: "LEFT", transform: (pos) => negateAndFlip(pos, true, false, false), orient: ([x, y]) =>  [0, y] },
+    right: { face: "RIGHT", transform: (pos) => {}, orient: ([x, y]) =>  [0, y] }
   },
   BACK: {
-    up: { face: "TOP", transform: (pos) => {}, flip: false },
-    down: { face: "BOTTOM", transform: (pos) => negateAndFlip(pos, false, true, false), flip: false },
-    left: { face: "LEFT", transform: (pos) => negateAndFlip(pos, true, false, true), flip: true },
-    right: { face: "RIGHT", transform: (pos) => negateAndFlip(pos, false, false, true), flip: true }
+    up: { face: "TOP", transform: (pos) => {}, orient: ([x, y]) =>  [x, 0] },
+    down: { face: "BOTTOM", transform: (pos) => negateAndFlip(pos, false, true, false), orient: ([x, y]) =>  [x, 0] },
+    left: { face: "LEFT", transform: (pos) => negateAndFlip(pos, true, false, true), orient: ([x, y]) =>  [y, 0] },
+    right: { face: "RIGHT", transform: (pos) => negateAndFlip(pos, false, false, true), orient: ([x, y]) =>  [y, 0] }
   },
 }
 
-export function shouldTraverse(face, x, y) {
-  const size = 8
-  let direction = null
-  if (x < 0) {
-    direction = "left"
-  } else if (x >= size) {
-    direction = "right"
-  } else if (y < 0) {
-    direction = "down"
-  } else if (y >= size) {
-    direction = "up"
-  } else {
-    return direction
-  }
-  return transitions[face][direction]
+export function getTransform(faces) { // list of faces, usually only 2 provided
+  const record = [1, 2]
+  compileTransforms(null, faces, record)
+  let flip = false, negateX = false, negateY = false
+  if (math.abs(record[0]) != 1) flip = true
+  if (record[0] < 0) negateX = true
+  if (record[1] < 0) negateY = true
+  return negateAndFlip(negateX, negateY, flip)
 }
+
+function compileTransforms(face, faces, record) {
+  if (!faces.length) return 
+  if (!face) face = faces.shift() // pop from faces 
+  const nextFace = faces[0]
+  const search = Object.values(transitions[face])
+  const hit = search.filter(a => a.face === nextFace)
+  if (!hit.length) {
+    search[0].transform(record)
+    compileTransforms(search[0].face, faces, record)
+  } else {
+    faces.shift()
+    hit[0].transform(record)
+    compileTransforms(nextFace, faces, record)
+  }
+}
+
 
 

@@ -1,4 +1,4 @@
-import { extractBCoords, mapToBoard, shouldTraverse } from "./faceRotationMap";
+import { extractBCoords, mapToBoard, transitions } from "./faceRotationMap";
 import Tile from "./Tile";
 import { boundPos } from "./utilities/utilities";
 
@@ -19,6 +19,21 @@ export default class Board {
 
   }
 
+  shouldTraverse(face, x, y) {
+    let direction = null
+    if (x < 0) {
+      direction = "left"
+    } else if (x >= this.size) {
+      direction = "right"
+    } else if (y < 0) {
+      direction = "down"
+    } else if (y >= this.size) {
+      direction = "up"
+    } else {
+      return direction
+    }
+    return transitions[face][direction]
+  }
   step(command) {
     const res = { x: 0, y: 0 };
     if (command[0]) {
@@ -40,16 +55,15 @@ export default class Board {
         const step = step(direction)
         pos.x += step.x
         pos.y += step.y
-        const traversal = shouldTraverse(pos.face, pos.x, pos.y)
+        const traversal = this.shouldTraverse(pos.face, pos.x, pos.y)
         
         if (traversal) { // change pos and commands to preserve canonical directions for new face frame
-          const { face, transform, flip } = traversal
+          const { face, transform, orient } = traversal
+          const newPos = orient([pos.x, pos.y])
+          pos.x = newPos[0]
+          pos.y = newPos[1]
+
           this.bound(pos)
-          if (flip) {
-            const tmp = pos.x
-            pos.y = pos.y
-            pos.x = tmp
-          }
           pos.face = face
           for (const command of commands) {
             transform(command)
@@ -65,7 +79,11 @@ export default class Board {
         }
         
         // invoke step function 
-        onStep(tile)
+        const terminate = onStep(tile)
+        if (terminate) {
+          onComplete()
+          return 
+        }
       }
     }
 

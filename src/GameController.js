@@ -1,6 +1,7 @@
 import Board from "./Board"
+import { getTransforms } from "./faceRotationMap"
 import Piece from "./Piece"
-import { boundedWalk } from "./utilities/utilities"
+import { boundedWalk } from "./utilities/lambdas"
 
 export default class GameController {
 
@@ -26,21 +27,35 @@ export default class GameController {
     }
 
     setupPieces() {
+        let index = 0
         for (const group of groups) {
             for (const piece of group) {
                 this.board.getTile(piece.position).place(piece)
                 // set piece's group field 
+                piece.group = index
             }
+            index++
         }
     }
 
-    /**
-     * @param {Piece} piece 
-     */
-
-    move(from, fromFace, to, toFace) { // tile objects
+    move(from, fromFace, to, toFace) { // tile objects with cube local faces
         // calculate transform from cube local face normals in cubeInteraction (BFS on transitions (two layers max)
         // move piece from from to to tile, and transform piece commands based on transform param
+
+
+        // the to tile should always be part of from's legal move set 
+
+        bury(to.piece)
+        to.piece = from.piece
+        from.piece = null
+
+        const transform = getTransform(fromFace, toFace)
+
+        to.piece.commands.forEach(command => transform(command))
+    }
+
+    bury(piece) { // handle capture
+        
     }
 
     getMoves(piece) {
@@ -50,7 +65,7 @@ export default class GameController {
     findLegalMoves(piece) {
         const legalSet = this.getMoves(piece)
         legalSet.clear()
-        this.board.walkAll(piece.position, piece.commands, boundedWalk(legalSet))
+        this.board.walkAll(piece.position, piece.getCommands(), boundedWalk(legalSet))
     }
 
     findAllLegalMoves(player) {

@@ -252,6 +252,10 @@ export default class CubeInteraction {
     if (this.highlighted) {
       if(this.highlighted.has(tile)) { // click legal move
         this.gameController.move(this.prev.tile, this.prev.face, tile, face)
+        
+        this.active.dirty = true
+        this.prev.cubelet.dirty = true
+
         this.endTurn()
       } else if (tile.piece && tile.piece.group == this.gameController.turn) { // click another piece
         this.clearGameState()
@@ -281,6 +285,9 @@ export default class CubeInteraction {
 
   endTurn() {
     this.gameController.endTurn()
+
+    // dirty loop 
+    
     this.clearGameState()
   }
 }

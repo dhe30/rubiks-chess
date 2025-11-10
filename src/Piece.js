@@ -6,4 +6,8 @@ export default class Piece {
         this.id = "test"
         this.group = 0
     }
+
+    getCommands() { // return clone of commands
+        return this.commands.map(command => command.splice())
+    }
 }

@@ -12,8 +12,15 @@ export default class Cubelet extends THREE.Mesh{
         const arr = [0x00ff00, 0xff0000]
         const randomIndex = Math.floor(Math.random() * arr.length);
         const geometry = new THREE.BoxGeometry(1, 1, 1)
-        const material = new THREE.MeshBasicMaterial({ color: arr[randomIndex] })
-        super(geometry, material)
+        this.material = {
+            right: new THREE.MeshBasicMaterial({ color: arr[randomIndex] }),
+            left: new THREE.MeshBasicMaterial({ color: arr[randomIndex] }),
+            top: new THREE.MeshBasicMaterial({ color: arr[randomIndex] }),
+            bottom: new THREE.MeshBasicMaterial({ color: arr[randomIndex] }),
+            front: new THREE.MeshBasicMaterial({ color: arr[randomIndex] }),
+            back: new THREE.MeshBasicMaterial({ color: arr[randomIndex] })
+        }
+        super(geometry, Object.values(this.material))
         this.cube = cube
         this.offset = offset
         // this.object = new THREE.Mesh(geometry, material)
@@ -81,9 +88,24 @@ export default class Cubelet extends THREE.Mesh{
 
     highlight(face) {
         // lights up local face 
+        this.material[face].color.setHex(0xff69b4)
+    }
+
+    unhighlight(face) {
+        this.material[face].color.setHex(0xff0000)
     }
 
     renderTiles() {
         // change this.faces into an object with tile and render fields
+        this.clear() // destroy all children
+        for (const face of this.faces) {
+            const tile = this.faces[face]
+            if (tile.piece) {
+                const push = faceVectors[face].clone().multiplyScalar(this.offset) // get direction 
+                const mesh = tile.piece.create() // get piece object 3D
+                mesh.position.copy(push) // scale direction to offset
+                this.add(mesh)
+            }
+        }
     }
 }

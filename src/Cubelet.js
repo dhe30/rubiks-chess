@@ -39,6 +39,7 @@ export default class Cubelet extends THREE.Mesh{
         }
 
         this.dirty = false // track outdated tile renders
+
     }
 
     // sets isEdge, isFace, is 
@@ -51,6 +52,7 @@ export default class Cubelet extends THREE.Mesh{
         if (this.position.y === -this.offset) this.faces.bottom = board.getTileReference("bottom", position)
         if (this.position.z === this.offset) this.faces.front = board.getTileReference("front", position)
         if (this.position.z === -this.offset) this.faces.back = board.getTileReference("back", position)
+        this.renderTiles()
     }
 
     setLogicalPosition(arr) {
@@ -99,10 +101,11 @@ export default class Cubelet extends THREE.Mesh{
     renderTiles() {
         // change this.faces into an object with tile and render fields
         this.clear() // destroy all children
-        for (const face of this.faces) {
+        for (const face of Object.keys(this.faces)) {
             const tile = this.faces[face]
+            if (tile == null) continue;
             if (tile.piece) {
-                const push = faceVectors[face].clone().multiplyScalar(this.offset) // get direction 
+                const push = faceVectors[face].clone().multiplyScalar(0.5) // vector to push piece outwards (magic number 0.5 is half cubelet size)
                 const mesh = tile.piece.create() // get piece object 3D
                 mesh.position.copy(push) // scale direction to offset
                 this.add(mesh)

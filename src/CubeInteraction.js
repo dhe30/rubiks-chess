@@ -13,7 +13,7 @@ export default class CubeInteraction {
   constructor(cube, container, gameController) {
     this.cube = cube;
     this.gameController = gameController;
-    this.prevState = {
+    this.prev = {
       tile: null,
       face: null,
       cubelet: null
@@ -232,11 +232,12 @@ export default class CubeInteraction {
         // no drag, procced as tile click event
         if (!this.active) {
           this.clearGameState()
-          return
+          return;
         } 
+        console.log(this.active)
         const clickedTile = this.active.tileFromFaceNormal(this.faceLocalNormal)
         const face = getCubeFaceFromNormal(this.active, this.faceLocalNormal)
-        gameLoop(clickedTile, face)
+        this.gameLoop(clickedTile, face)
     }
   }
 
@@ -252,6 +253,7 @@ export default class CubeInteraction {
 
   gameLoop(tile, face) {
     if (this.highlighted) {
+      console.log("has highlighted")
       if(this.highlighted.has(tile)) { // click legal move
         this.gameController.move(this.prev.tile, this.prev.face, tile, face)
         
@@ -268,7 +270,12 @@ export default class CubeInteraction {
         return
       }
     } else {
-      this.highlighted = this.gameController.getMoves(tile)
+      if (tile.piece == null || tile.piece.group != this.gameController.turn) {
+        // click empty tile or opponent piece
+        return
+      }
+      console.log("highlighted")
+      this.highlighted = this.gameController.getMoves(tile.piece)
       this.toggleHighlights(this.highlighted)
     
     }
@@ -278,7 +285,7 @@ export default class CubeInteraction {
     for (const tile of tileList) {
       const { cubelet, face } = this.cube.tileToCubelet.get(tile)
       if (on) {
-        cubelet.highight(face)
+        cubelet.highlight(face)
       } else {
         cubelet.unhighlight(face)
       }

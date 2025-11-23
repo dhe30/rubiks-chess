@@ -50,9 +50,10 @@ export default class Board {
   }
 
   walk(pos, commands, visited, onStep, onComplete) {
+    console.log("WALKING", pos, commands)
     for (const direction of commands) {
       while (Math.abs(direction[0]) > 0 || Math.abs(direction[1]) > 0) {
-        const step = step(direction)
+        const step = this.step(direction)
         pos.x += step.x
         pos.y += step.y
         const traversal = this.shouldTraverse(pos.face, pos.x, pos.y)
@@ -70,7 +71,7 @@ export default class Board {
           }
         }
         // get tile at pos and check visited set 
-        const tile = this.board.getTile(pos)
+        const tile = this.getTile(pos)
         if (visited.has(tile)) {
           onComplete()
           return 
@@ -80,6 +81,7 @@ export default class Board {
         
         // invoke step function 
         const terminate = onStep(tile)
+        console.log("STEP", tile, terminate)
         if (terminate) {
           onComplete()
           return 
@@ -92,11 +94,12 @@ export default class Board {
   }
   
   walkAll(bcoor, commands, stepFn, onComplete = () => {}) {
-    const origin = this.board.getTile(bcoor)
+    console.log("WALK ALL", bcoor, commands)
+    const origin = this.getTile(bcoor)
     for (const command of commands) {
       const visited = new Set()
       visited.add(origin)
-      walk({...bcoor}, [...command], visited, stepFn, onComplete)
+      this.walk({...bcoor}, [...command], visited, stepFn, onComplete)
     }
   }
 
@@ -134,6 +137,7 @@ export default class Board {
   }
 
   getTile(bcoor) {
+    console.log("GET TILE", bcoor)
     return this[bcoor.face].tiles[bcoor.x][bcoor.y]
   }
 

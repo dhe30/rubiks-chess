@@ -189,7 +189,7 @@ function negateAndFlip(command, negateX, negateY, flip) {
 export const transitions = {
   FRONT: {
     up: { face: "TOP", transform: (pos) => negateAndFlip(pos, false, true, false), orient: ([x, y]) =>  [x, Number.POSITIVE_INFINITY] },
-    down: { face: "BOTTTOM", transform: (pos) => {}, orient: ([x, y]) =>  [x, Number.POSITIVE_INFINITY] },
+    down: { face: "BOTTOM", transform: (pos) => {}, orient: ([x, y]) =>  [x, Number.POSITIVE_INFINITY] },
     left: { face: "LEFT", transform: (pos) => negateAndFlip(pos, true, false, true), orient: ([x, y]) =>  [y, Number.POSITIVE_INFINITY] },
     right: { face: "RIGHT", transform: (pos) => negateAndFlip(pos, true, false, true), orient: ([x, y]) =>  [Number.POSITIVE_INFINITY, y] }
   },

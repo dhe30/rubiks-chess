@@ -10,7 +10,7 @@ export default class GameController {
      * @param {Board} board 
      * @param {[Piece]} groups 
      */
-    constructor(board, groups = []) {
+    constructor(board, groups = [[new Piece({face: "FRONT", x:0,y:0})]]) {
         this.board = board
         this.groups = groups
         this.setupPieces()
@@ -24,6 +24,7 @@ export default class GameController {
             this.legalMoves.push(map)
         }
         this.turn = -1 // 0-indexed
+        this.endTurn() // set to player 0
     }
 
     setupPieces() {
@@ -59,13 +60,14 @@ export default class GameController {
     }
 
     getMoves(piece) {
-        return this.legalMoves[piece.group][piece.id]
+        return this.legalMoves[piece.group].get(piece.id)
     }
 
     findLegalMoves(piece) {
         const legalSet = this.getMoves(piece)
         legalSet.clear()
         this.board.walkAll(piece.position, piece.getCommands(), boundedWalk(legalSet))
+        console.log(legalSet)
     }
 
     findAllLegalMoves(player) {
@@ -79,6 +81,6 @@ export default class GameController {
 
     endTurn() {
         this.turn = (this.turn + 1) % this.players
-        this.getAllLegalMoves(this.turn)
+        this.findAllLegalMoves(this.turn)
     }
 }

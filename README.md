@@ -1,5 +1,7 @@
 # rubiks-chess
 
+11/22 - achieved highlighted, work out kinks with this.prev state correctly being set
+
 10/27 - for next time: finish initFaces in cubelet class and finish rotation remapping in slicer class 
 
 10/30 - for next time: 

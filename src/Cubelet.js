@@ -12,7 +12,7 @@ export default class Cubelet extends THREE.Mesh{
         const arr = [0x00ff00, 0xff0000]
         const randomIndex = Math.floor(Math.random() * arr.length);
         const geometry = new THREE.BoxGeometry(1, 1, 1)
-        this.material = {
+        const faceMaterials = {
             right: new THREE.MeshBasicMaterial({ color: arr[randomIndex] }),
             left: new THREE.MeshBasicMaterial({ color: arr[randomIndex] }),
             top: new THREE.MeshBasicMaterial({ color: arr[randomIndex] }),
@@ -20,7 +20,8 @@ export default class Cubelet extends THREE.Mesh{
             front: new THREE.MeshBasicMaterial({ color: arr[randomIndex] }),
             back: new THREE.MeshBasicMaterial({ color: arr[randomIndex] })
         }
-        super(geometry, Object.values(this.material))
+        super(geometry, Object.values(faceMaterials))
+        this.faceMaterials = faceMaterials
         this.cube = cube
         this.offset = offset
         // this.object = new THREE.Mesh(geometry, material)
@@ -88,11 +89,11 @@ export default class Cubelet extends THREE.Mesh{
 
     highlight(face) {
         // lights up local face 
-        this.material[face].color.setHex(0xff69b4)
+        this.faceMaterials[face].color.setHex(0xff69b4)
     }
 
     unhighlight(face) {
-        this.material[face].color.setHex(0xff0000)
+        this.faceMaterials[face].color.setHex(0xff0000)
     }
 
     renderTiles() {

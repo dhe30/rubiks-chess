@@ -1,5 +1,5 @@
 import Board from "./Board"
-import { getTransforms } from "./faceRotationMap"
+import { getTransform } from "./faceRotationMap"
 import Piece from "./Piece"
 import { boundedWalk } from "./utilities/lambdas"
 
@@ -15,7 +15,7 @@ export default class GameController {
         this.groups = groups
         this.setupPieces()
         this.legalMoves = []
-        this.players = groups.size()
+        this.players = groups.length
         for (const group of groups) {
             const map = new Map()
             for (const piece of group) {
@@ -28,7 +28,7 @@ export default class GameController {
 
     setupPieces() {
         let index = 0
-        for (const group of groups) {
+        for (const group of this.groups) {
             for (const piece of group) {
                 this.board.getTile(piece.position).place(piece)
                 // set piece's group field 

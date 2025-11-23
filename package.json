@@ -12,5 +12,5 @@
   "scripts": {
     "build": "babel src --out-dir dist"
   },
-  "main": "dist/Cube.js"
+  "main": "dist/index.js"
 }

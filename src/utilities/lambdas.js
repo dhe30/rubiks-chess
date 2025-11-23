@@ -1,6 +1,6 @@
   // lambdas for game controller
 
-  export const boundedWalk = (record) = (tile) => {
+  export const boundedWalk = (record) => (tile) => {
     if (tile.piece) {
       return true
     }

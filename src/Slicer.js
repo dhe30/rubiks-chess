@@ -2,6 +2,7 @@ import { Euler, Group, Vector3 } from 'three'
 import { Tween, Easing } from '@tweenjs/tween.js';
 import Cube from './Cube';
 import { rotationFromAngleAxis } from './faceRotationMap';
+import { quantizePositions, quantizeRotation } from './utilities/utilities';
 export default class Slicer {
     /**
      * 
@@ -17,6 +18,7 @@ export default class Slicer {
         this.children = []
         this.tween = null
         this.twistDuration = 500
+        this.precision = Number.isInteger(this.cube.size - 1 / 2) ? 0 : 1
     }
 
     // DEPRECIATED! do not use
@@ -34,11 +36,11 @@ export default class Slicer {
         this.slice.clear()
         for (let i = 0; i < this.cube.cubelets.length; i++) {
             const cubelet = this.cube.cubelets[i]
-            if (cubelet.position.toArray()[axisIndex] == layer) {
+            console.log(cubelet.position.toArray())
+            if (Object.values(cubelet.userData.logicalPosition)[axisIndex] == layer) {
                 cubelet.isMapped = false
                 this.children.push(cubelet)
                 // we must transfer cubelets from the cube group to the slice group 
-                // cubelet.parent.remove(cubelet)
                 this.slice.attach(cubelet)
             }
         }
@@ -61,14 +63,16 @@ export default class Slicer {
     }
 
     quantize(cubelet) {
-        cubelet.position.x = Math.round(cubelet.position.x);
-        cubelet.position.y = Math.round(cubelet.position.y);
-        cubelet.position.z = Math.round(cubelet.position.z);
-        const e = new Euler().setFromQuaternion(cubelet.quaternion);
-        e.x = Math.round(e.x / (Math.PI/2)) * (Math.PI/2);
-        e.y = Math.round(e.y / (Math.PI/2)) * (Math.PI/2);
-        e.z = Math.round(e.z / (Math.PI/2)) * (Math.PI/2);
-        cubelet.quaternion.setFromEuler(e);
+        quantizePositions(this.precision)(cubelet)
+        quantizeRotation(cubelet)
+        // cubelet.position.x = Math.round(cubelet.position.x);
+        // cubelet.position.y = Math.round(cubelet.position.y);
+        // cubelet.position.z = Math.round(cubelet.position.z);
+        // const e = new Euler().setFromQuaternion(cubelet.quaternion);
+        // e.x = Math.round(e.x / (Math.PI/2)) * (Math.PI/2);
+        // e.y = Math.round(e.y / (Math.PI/2)) * (Math.PI/2);
+        // e.z = Math.round(e.z / (Math.PI/2)) * (Math.PI/2);
+        // cubelet.quaternion.setFromEuler(e);
         cubelet.updateMatrix();
         cubelet.updateMatrixWorld(true);
     }
@@ -91,7 +95,7 @@ export default class Slicer {
                 for (const cubelet of this.children) {
                     cubelet.updateMatrixWorld(true)
                     // cubelet.parent.remove(cubelet)
-                    this.cube.object.attach(cubelet.object)
+                    this.cube.object.attach(cubelet)
                     cubelet.updateMatrix();           
                     cubelet.updateMatrixWorld(true);
                     this.quantize(cubelet)

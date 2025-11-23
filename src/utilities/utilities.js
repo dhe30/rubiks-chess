@@ -1,4 +1,4 @@
-import { Matrix3, Matrix4, Vector3 } from "three";
+import { Euler, Matrix3, Matrix4, Vector3 } from "three";
 import Cubelet from "../Cubelet";
 
 export const faceVectors = {
@@ -8,6 +8,20 @@ export const faceVectors = {
   right: new Vector3(1, 0, 0),
   bottom: new Vector3(0, -1, 0),
   back: new Vector3(0, 0, -1)
+}
+
+export const quantizePositions = (precision) => (cubelet) => {
+  cubelet.position.x = Number(cubelet.position.x.toFixed(precision))
+  cubelet.position.y = Number(cubelet.position.y.toFixed(precision))
+  cubelet.position.z = Number(cubelet.position.z.toFixed(precision))
+}
+
+export const quantizeRotation = (cubelet) => {
+  const e = new Euler().setFromQuaternion(cubelet.quaternion);
+  e.x = Math.round(e.x / (Math.PI/2)) * (Math.PI/2);
+  e.y = Math.round(e.y / (Math.PI/2)) * (Math.PI/2);
+  e.z = Math.round(e.z / (Math.PI/2)) * (Math.PI/2);
+  cubelet.quaternion.setFromEuler(e);
 }
 
 /**
@@ -27,7 +41,7 @@ function quantizeVector3(vector) {
  */
 export function getCubeFaceFromNormal(cubelet, normal) {
   cubelet.updateMatrixWorld(true)
-  const parentInvert = new Matrix4.copy(cubelet.parent.matrixWorld).invert()
+  const parentInvert = new Matrix4().copy(cubelet.parent.matrixWorld).invert()
   const cubeLocal = new Matrix4().multiplyMatrices(parentInvert, cubelet.matrixWorld)
   const normalMatrix = new Matrix3().getNormalMatrix(cubeLocal)
   const cubeNormal = normal.clone().applyMatrix3(normalMatrix).normalize()

@@ -4,7 +4,7 @@ import Slicer from './Slicer'
 import Renderer from './Renderer'
 import CubeInteraction from './CubeInteraction'
 import { Group } from '@tweenjs/tween.js'
-import Board from './Board'
+// import Board from './Board'
 import GameController from './GameController'
 export default class Cube {
     /**
@@ -25,11 +25,11 @@ export default class Cube {
 
         this.object = new THREE.Group()
         this.initCubelets()
-        if (board) this.initCubeletFaces()
+        if (this.board) this.initCubeletFaces()
         
         this.slicer = new Slicer(this)
         this.renderer = new Renderer(container, this.object)
-        this.interaction = new CubeInteraction(this, container. gameController)
+        this.interaction = new CubeInteraction(this, container, gameController)
 
         console.log(this.cubelets.length)
         this.animate = this.animate.bind(this);
@@ -37,7 +37,7 @@ export default class Cube {
     }
 
     initCubelets() {
-        let offset = (this.size - 1) / 2
+        let offset =(this.size - 1) / 2
         for (let x = 0; x < this.size; x++) {
             for (let y = 0; y < this.size; y++) {
                 for (let z = 0; z < this.size; z++) {

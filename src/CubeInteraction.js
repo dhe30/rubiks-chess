@@ -1,7 +1,8 @@
 import { Vector2, Matrix4, Raycaster, Vector3, Plane } from "three";
 import Cube from "./Cube";
-import { getFaceFromNormal } from "./utilities/utilities";
+// import { getFaceFromNormal } from "./utilities/utilities";
 import GameController from "./GameController";
+import { getCubeFaceFromNormal } from "./utilities/utilities";
 export default class CubeInteraction {
   /**
    * @param {import('three').WebGLRenderer} renderer
@@ -17,6 +18,7 @@ export default class CubeInteraction {
       face: null,
       cubelet: null
     }
+    this.dirty = []
 
 
     this.container = container;
@@ -190,7 +192,7 @@ export default class CubeInteraction {
         .normalize();
 
       const index = this.snapVectorToBasis(cubeLocalAxis); // snap axis and return axis as index
-      const layer = Math.round(this.active.position.toArray()[index]);
+      const layer = Math.round(Object.values(this.active.userData.logicalPosition)[index]);
       this.cube.slicer.getSlice(index, layer, cubeLocalAxis); // sets slice for rotation (slice is relative to the cube, so we use cubeLocalAxis)
 
       // return axis to the cube
@@ -253,8 +255,8 @@ export default class CubeInteraction {
       if(this.highlighted.has(tile)) { // click legal move
         this.gameController.move(this.prev.tile, this.prev.face, tile, face)
         
-        this.active.dirty = true
-        this.prev.cubelet.dirty = true
+        this.dirty.push(this.prev.cubelet)
+        this.dirty.push(this.active)
 
         this.endTurn()
       } else if (tile.piece && tile.piece.group == this.gameController.turn) { // click another piece
@@ -287,6 +289,10 @@ export default class CubeInteraction {
     this.gameController.endTurn()
 
     // dirty loop 
+    while(this.dirty.length > 0) {
+      const cubelet = this.dirty.pop();
+      cubelet.renderTiles();
+    }
     
     this.clearGameState()
   }

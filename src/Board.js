@@ -6,7 +6,7 @@ export default class Board {
   constructor(size) {
     // this.cube = cube;
     this.offset = (size - 1) / 2;
-    const size = size;
+    // const size = size;
     this.bound = boundPos(0, size) // exlusive of size (bouned to size - 1)
     this.FRONT = { tiles: this.initFace(size, "FRONT") };
     this.BACK = { tiles: this.initFace(size, "BACK") };

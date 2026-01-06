@@ -1,6 +1,6 @@
 export default class Tile {
-    constructor(value = "none") {
-        this.value = value
+    constructor(value = {}) {
+        this.pos = value
         this.piece = null
         this.highlighted = false
     }

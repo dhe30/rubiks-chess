@@ -229,16 +229,17 @@ export function getTransform(faces) { // list of faces, usually only 2 provided
   const record = [1, 2]
   compileTransforms(null, faces, record)
   let flip = false, negateX = false, negateY = false
-  if (math.abs(record[0]) != 1) flip = true
+  if (Math.abs(record[0]) != 1) flip = true
   if (record[0] < 0) negateX = true
   if (record[1] < 0) negateY = true
-  return negateAndFlip(negateX, negateY, flip)
+  return (command) => negateAndFlip(command, negateX, negateY, flip)
 }
 
 function compileTransforms(face, faces, record) {
   if (!faces.length) return 
   if (!face) face = faces.shift() // pop from faces 
   const nextFace = faces[0]
+  console.log(face, transitions[face])
   const search = Object.values(transitions[face])
   const hit = search.filter(a => a.face === nextFace)
   if (!hit.length) {

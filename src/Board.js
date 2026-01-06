@@ -118,7 +118,7 @@ export default class Board {
     for (let i = 0; i < size; i++) {
       const row = [];
       for (let j = 0; j < size; j++) {
-        row.push(new Tile(value));
+        row.push(new Tile({face:value, x:i, y:j}));
       }
       face.push(row);
     }

@@ -46,13 +46,16 @@ export default class GameController {
 
         // the to tile should always be part of from's legal move set 
 
-        bury(to.piece)
+        this.bury(to.piece)
         to.piece = from.piece
         from.piece = null
 
-        const transform = getTransform(fromFace, toFace)
+        const transform = getTransform([fromFace, toFace])
 
         to.piece.commands.forEach(command => transform(command))
+        // we store positions instead of tiles directly so creating groups of pieces
+        // does not depend on having a board configuration already
+        to.piece.position = to.pos
     }
 
     bury(piece) { // handle capture

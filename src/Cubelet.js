@@ -20,6 +20,9 @@ export default class Cubelet extends THREE.Mesh{
             front: new THREE.MeshBasicMaterial({ color: arr[randomIndex] }),
             back: new THREE.MeshBasicMaterial({ color: arr[randomIndex] })
         }
+        for (const material of Object.values(faceMaterials)) {
+            material.userData.originalColor = material.color.clone()
+        }
         super(geometry, Object.values(faceMaterials))
         this.faceMaterials = faceMaterials
         this.cube = cube
@@ -95,7 +98,7 @@ export default class Cubelet extends THREE.Mesh{
     }
 
     unhighlight(face) {
-        this.faceMaterials[face].color.setHex(0xff0000)
+        this.faceMaterials[face].color.set(this.faceMaterials[face].userData.originalColor)
     }
 
     renderTiles() {

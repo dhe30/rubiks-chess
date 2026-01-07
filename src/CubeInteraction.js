@@ -2,11 +2,14 @@ import { Vector2, Matrix4, Raycaster, Vector3, Plane } from "three";
 import Cube from "./Cube";
 // import { getFaceFromNormal } from "./utilities/utilities";
 import GameController from "./GameController";
-import { getCubeFaceFromNormal } from "./utilities/utilities";
+import SliceDragHandler from "./eventHandlers/SliceDragHandler";
+import ClickHandler from "./eventHandlers/ClickHandler";
+import IdleHandler from "./eventHandlers/IdleHandler";
 
-const InteractionState = {
+export const InteractionState = {
   IDLE: "idle",
   DRAGGING_SLICE: "dragging_slice",
+  CLICK: "click",
 };
 
 export default class CubeInteraction {
@@ -19,18 +22,6 @@ export default class CubeInteraction {
   constructor(cube, container, gameController) {
     this.cube = cube;
     this.gameController = gameController;
-    this.state = InteractionState.IDLE;
-    this.handlers = {
-      [InteractionState.IDLE]: this,
-      [InteractionState.DRAGGING_SLICE]: new SliceDragHandler(this),
-    };
-
-    this.prev = {
-      tile: null,
-      face: null,
-      cubelet: null,
-    };
-    this.dirty = [];
 
     this.container = container;
     this.renderer = cube.renderer.renderer;
@@ -43,6 +34,14 @@ export default class CubeInteraction {
     this.dragVector = new Vector3();
     this.initEventListeners();
     this.isDragging = false;
+
+    this.state = InteractionState.IDLE;
+    this.handlers = {
+      [InteractionState.IDLE]: new IdleHandler(this),
+      [InteractionState.DRAGGING_SLICE]: new SliceDragHandler(this),
+      [InteractionState.CLICK]: new ClickHandler(this),
+    };
+    this.activeHandler = null;
   }
 
   initEventListeners() {
@@ -65,7 +64,6 @@ export default class CubeInteraction {
       this.onMouseUp(e);
     });
   }
-
   /**
    * @param {MouseEvent} event
    */
@@ -105,41 +103,10 @@ export default class CubeInteraction {
       plane,
     };
   }
-  getIntersectionOnPlane(event, plane) {
-    const rect = this.renderer.domElement.getBoundingClientRect();
 
-    // convert pixel coords to NDC (mapped onto near clipping plane)
-    this.mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-    this.mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
-
-    // ray from camera to NDC on near clipping plane (into scene)
-    this.raycaster.setFromCamera(this.mouse, this.camera);
-
-    const intersectionPoint = new Vector3();
-    this.raycaster.ray.intersectPlane(plane, intersectionPoint);
-
-    return intersectionPoint;
-  }
-  /**
-   * @param {Vector3} vector
-   */
-  // modifies input vector and returns the index of dominant direction (0:x,1:y,2:z)
-  snapVectorToBasis(vector) {
-    let max = Math.max(
-      Math.abs(vector.x),
-      Math.abs(vector.y),
-      Math.abs(vector.z)
-    );
-    vector.x = (vector.x / max) | 0;
-    vector.y = vector.x ? 0 : (vector.y / max) | 0;
-    vector.z = vector.x || vector.y ? 0 : (vector.z / max) | 0;
-    return Math.abs(vector.x)
-      ? 0
-      : Math.abs(vector.y)
-      ? 1
-      : Math.abs(vector.z)
-      ? 2
-      : -1;
+  setState(newState) {
+    this.state = newState;
+    this.activeHandler = this.handlers[newState];
   }
 
   reset() {
@@ -173,168 +140,21 @@ export default class CubeInteraction {
     this.plane = raycastResult.plane;
     this.isDragging = true;
 
-    this.state = InteractionState.DRAGGING_SLICE;
-    this.activeHandler = this.handlers[this.state];
+    for (const [state, handler] of Object.entries(this.handlers)) {
+      if (handler.canHandle(raycastResult)) {
+        this.state = state;
+        this.activeHandler = handler;
+        this.activeHandler.onStart(event, raycastResult);
+        break;
+      }
+    }
   }
 
   onMouseMove(event) {
-    if (!this.isDragging) return;
-    console.log("moving!");
-    if (!this.active) return;
-    const point = this.getIntersectionOnPlane(event, this.plane);
-    if (!point) return;
-    // console.log("dragging!")
-    const dragVector = this.dragVector.subVectors(point, this.start); // direction
-    const projected = dragVector.projectOnPlane(this.faceWorldNormal); // project drag vector onto face
-
-    if (!this.axisDefined && dragVector.length() > this.dragThreshold) {
-      // axis of rotation (not perpendicular, so we need to snap to x, y, or z)
-      const axis = new Vector3()
-        .crossVectors(this.faceWorldNormal, projected)
-        .normalize();
-
-      // snapping is very easy if we're snapping to global x, y, z: +/-[1, 0, 0], +/-[0, 1, 0], +/-[0, 0, 1]
-      // but the cube might be rotated! so:
-      // we need to un-rotate the axis accoording to the cube's rotation, snap to the global axis, and re-rotate
-      const cubeRotation = new Matrix4().extractRotation(
-        this.cube.object.matrixWorld
-      );
-      const invCubeRotation = cubeRotation.clone().invert();
-      const cubeLocalAxis = axis
-        .clone()
-        .applyMatrix4(invCubeRotation)
-        .normalize();
-
-      const index = this.snapVectorToBasis(cubeLocalAxis); // snap axis and return axis as index
-      const layer = Math.round(
-        Object.values(this.active.userData.logicalPosition)[index]
-      );
-      this.cube.slicer.getSlice(index, layer, cubeLocalAxis); // sets slice for rotation (slice is relative to the cube, so we use cubeLocalAxis)
-
-      // return axis to the cube
-      this.axis = cubeLocalAxis.applyMatrix4(cubeRotation).normalize();
-
-      // direction of rotation (essentially drag vector but perpendicular)
-      this.cross.crossVectors(this.axis, this.faceWorldNormal);
-
-      this.axisDefined = true;
-    }
-
-    if (this.axisDefined) {
-      const dot = this.cross.dot(dragVector);
-      const angle = (dot / this.cube.size) * this.dragSpeed;
-      this.angle = angle; // record to calculate snap on mouse up
-      this.cube.slicer.update(angle); // updates slice defined in previous block
-    }
+    this.activeHandler?.onMove(event);
   }
 
   onMouseUp(event) {
-    this.isDragging = false;
-    if (this.axisDefined) {
-      let snappedAngle =
-        Math.round((this.angle / Math.PI) * 0.5 * 4.0) * Math.PI * 0.5;
-      const interactionVelocity =
-        this.dragVector.length() / (Date.now() - this.time);
-      // NOTE: if gameController is activated, only 90* turns are permitted and interaction velocity doesn't add additional turns
-      if (interactionVelocity > 0.3) {
-        snappedAngle +=
-          this.cross.dot(this.dragVector.normalize()) > 0
-            ? Math.PI / 2
-            : -(Math.PI / 2);
-      }
-
-      //REFACTOR: add remapping simulation and baking here instead of in Slicer
-
-      this.cube.slicer.end(this.angle, snappedAngle);
-    } else {
-      // ADD CONDITIONAL: if not rotating cube
-      // no drag, procced as tile click event
-      if (!this.active) {
-        this.clearGameState();
-        return;
-      }
-      console.log(this.active);
-      const clickedTile = this.active.tileFromFaceNormal(this.faceLocalNormal);
-      const face = getCubeFaceFromNormal(this.active, this.faceLocalNormal);
-      this.gameLoop(clickedTile, face, this.active);
-    }
-  }
-
-  setPrevState(tile, face, cubelet) {
-    this.prev.tile = tile;
-    this.prev.face = face;
-    this.prev.cubelet = cubelet;
-  }
-
-  clearGameState() {
-    this.prev.tile = null;
-    this.prev.face = null;
-    this.prev.cubelet = null;
-    if (this.highlighted) {
-      this.toggleHighlights(this.highlighted, false);
-    }
-    this.highlighted = null;
-  }
-
-  gameLoop(tile, face, cubelet) {
-    if (this.highlighted) {
-      console.log("has highlighted");
-      if (this.highlighted.has(tile)) {
-        // click legal move
-        this.gameController.move(this.prev.tile, this.prev.face, tile, face);
-
-        this.dirty.push(this.prev.cubelet);
-        this.dirty.push(this.active);
-
-        this.endTurn();
-      } else if (tile.piece && tile.piece.group == this.gameController.turn) {
-        // click another piece
-        this.toggleHighlights(this.highlighted, false);
-
-        this.setPrevState(tile, face, cubelet);
-        this.highlighted = this.gameController.getMoves(tile.piece);
-        this.toggleHighlights(this.highlighted);
-      } else {
-        // click random tile
-        this.clearGameState();
-        return;
-      }
-    } else {
-      if (tile.piece == null || tile.piece.group != this.gameController.turn) {
-        // click empty tile or opponent piece
-        return;
-      }
-      console.log("highlighted");
-      this.setPrevState(tile, face, cubelet);
-      this.highlighted = this.gameController.getMoves(tile.piece);
-      console.log(this.highlighted);
-      this.toggleHighlights(this.highlighted);
-    }
-  }
-
-  toggleHighlights(tileList, on = true) {
-    if (!tileList) return;
-    for (const tile of tileList) {
-      const { cubelet, face } = this.cube.tileToCubelet.get(tile);
-      if (on) {
-        cubelet.highlight(face);
-      } else {
-        cubelet.unhighlight(face);
-      }
-    }
-  }
-
-  endTurn() {
-    console.log("Turn ended");
-    // clear highlights first so the highlighted Set isn't mutated
-    // by GameController.endTurn() when it recomputes legal moves
-    this.clearGameState();
-    this.gameController.endTurn();
-
-    // dirty loop
-    while (this.dirty.length > 0) {
-      const cubelet = this.dirty.pop();
-      cubelet.renderTiles();
-    }
+    this.activeHandler?.onEnd(event);
   }
 }

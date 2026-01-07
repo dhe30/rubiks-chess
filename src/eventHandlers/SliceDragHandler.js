@@ -1,6 +1,11 @@
-class SliceDragHandler {
+import { Vector2, Matrix4, Raycaster, Vector3, Plane } from "three";
+import { InteractionState } from "../CubeInteraction.js";
+import IdleHandler from "./IdleHandler.js";
+export default class SliceDragHandler extends IdleHandler {
   constructor(cubeInteraction) {
-    this.cubeInteraction = cubeInteraction;
+    super(cubeInteraction);
+    this.raycaster = this.cubeInteraction.raycaster;
+    this.camera = this.cubeInteraction.camera;
     this.dragThreshold = 0.5; // minimum drag distance to define axis
     this.dragSpeed = 1.3; // magic number from Chrome Cube Lab source couce https://github.com/devdude123/Chrome-Cube-Lab---Cuber/blob/master/cuber/src/scripts/interaction.js#L44
 
@@ -8,6 +13,8 @@ class SliceDragHandler {
     this.dragVector = new Vector3();
     this.mouse = new Vector2();
   }
+
+
 
   snapVectorToBasis(vector) {
     let max = Math.max(
@@ -49,8 +56,11 @@ class SliceDragHandler {
   }
 
   onStart(event, raycastResult) {
+    console.log("SliceDragHandler onStart");
     this.start = raycastResult.point;
     this.plane = raycastResult.plane;
+    this.faceWorldNormal = raycastResult.faceWorldNormal;
+    this.faceLocalNormal = raycastResult.faceLocalNormal;
     this.axisDefined = false;
     this.active = raycastResult.object;
     this.time = Date.now();
@@ -113,6 +123,17 @@ class SliceDragHandler {
       //REFACTOR: add remapping simulation and baking here instead of in Slicer
 
       this.cubeInteraction.cube.slicer.end(this.angle, snappedAngle);
+      this.transition(InteractionState.IDLE);
+    } else {
+      // no axis defined, so treat as a click
+      const raycastResultForClick = {
+        object: this.active,
+        faceLocalNormal: this.faceLocalNormal,
+      }
+      this.transition(InteractionState.CLICK);
+      console.log("treating as click", this.cubeInteraction.activeHandler);
+      this.cubeInteraction.activeHandler.onStart(event, raycastResultForClick);
+      this.cubeInteraction.activeHandler.onEnd(event);
     }
   }
 }

@@ -9,7 +9,7 @@ export default class Piece {
         
         // commands[i] starts from original position 
         // commands[i][j] starts from position after commands[i][j-1]
-        this.commands = [[[1,0]], [[-1,0]], [[0,1]], [[0,-1]]] 
+        this.commands = [[[1,0]]] 
         this.id = "test"
         this.mesh = null
         this.group = 0

@@ -6,7 +6,7 @@ export default class Board {
   constructor(size) {
     // this.cube = cube;
     this.offset = (size - 1) / 2;
-    // const size = size;
+    this.size = size;
     this.bound = boundPos(0, size) // exlusive of size (bouned to size - 1)
     this.FRONT = { tiles: this.initFace(size, "FRONT") };
     this.BACK = { tiles: this.initFace(size, "BACK") };
@@ -56,11 +56,13 @@ export default class Board {
         const step = this.step(direction)
         pos.x += step.x
         pos.y += step.y
+        console.log("STEPPED TO", pos, "WITH LIMITS", this.size)
         const traversal = this.shouldTraverse(pos.face, pos.x, pos.y)
         
         if (traversal) { // change pos and commands to preserve canonical directions for new face frame
           const { face, transform, orient } = traversal
           const newPos = orient([pos.x, pos.y])
+          console.log("TRAVERSING FROM", pos.face, "TO", face, "WITH POS", newPos)
           pos.x = newPos[0]
           pos.y = newPos[1]
 

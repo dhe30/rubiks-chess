@@ -10,7 +10,7 @@ export default class GameController {
      * @param {Board} board 
      * @param {[Piece]} groups 
      */
-    constructor(board, groups = [[new Piece({face: "FRONT", x:0,y:0})]]) {
+    constructor(board, groups = [[new Piece({face: "FRONT", x:7,y:0})]]) {
         this.board = board
         this.groups = groups
         this.setupPieces()
@@ -49,13 +49,14 @@ export default class GameController {
         this.bury(to.piece)
         to.piece = from.piece
         from.piece = null
-
+        to.piece.position = to.pos
+        if (fromFace == toFace) return // no transform needed
         const transform = getTransform([fromFace, toFace])
 
-        to.piece.commands.forEach(command => transform(command))
+        to.piece.commands.forEach(sequence => sequence.forEach(command => transform(command)))
         // we store positions instead of tiles directly so creating groups of pieces
         // does not depend on having a board configuration already
-        to.piece.position = to.pos
+        console.log("Move function executed", to.piece.commands)
     }
 
     bury(piece) { // handle capture
@@ -69,6 +70,7 @@ export default class GameController {
     findLegalMoves(piece) {
         const legalSet = this.getMoves(piece)
         legalSet.clear()
+        console.log("Finding legal moves for piece", piece, piece.position)
         this.board.walkAll(piece.position, piece.getCommands(), boundedWalk(legalSet))
         console.log(legalSet)
     }

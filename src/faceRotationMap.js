@@ -191,7 +191,7 @@ export const transitions = {
     up: { face: "TOP", transform: (pos) => negateAndFlip(pos, false, true, false), orient: ([x, y]) =>  [x, Number.POSITIVE_INFINITY] },
     down: { face: "BOTTOM", transform: (pos) => {}, orient: ([x, y]) =>  [x, Number.POSITIVE_INFINITY] },
     left: { face: "LEFT", transform: (pos) => negateAndFlip(pos, true, false, true), orient: ([x, y]) =>  [y, Number.POSITIVE_INFINITY] },
-    right: { face: "RIGHT", transform: (pos) => negateAndFlip(pos, true, false, true), orient: ([x, y]) =>  [Number.POSITIVE_INFINITY, y] }
+    right: { face: "RIGHT", transform: (pos) => negateAndFlip(pos, false, true, true), orient: ([x, y]) =>  [y, Number.POSITIVE_INFINITY] }
   },
   LEFT: {
     up: { face: "FRONT", transform: (pos) => negateAndFlip(pos, false, false, true), orient: ([x, y]) =>  [0, x] },
@@ -220,23 +220,28 @@ export const transitions = {
   BACK: {
     up: { face: "TOP", transform: (pos) => {}, orient: ([x, y]) =>  [x, 0] },
     down: { face: "BOTTOM", transform: (pos) => negateAndFlip(pos, false, true, false), orient: ([x, y]) =>  [x, 0] },
-    left: { face: "LEFT", transform: (pos) => negateAndFlip(pos, true, false, true), orient: ([x, y]) =>  [y, 0] },
+    left: { face: "LEFT", transform: (pos) => negateAndFlip(pos, false, true, true), orient: ([x, y]) =>  [y, 0] },
     right: { face: "RIGHT", transform: (pos) => negateAndFlip(pos, false, false, true), orient: ([x, y]) =>  [y, 0] }
   },
 }
 
 export function getTransform(faces) { // list of faces, usually only 2 provided
   const record = [1, 2]
+  console.log("COMPILING TRANSFORMS FOR", faces)
   compileTransforms(null, faces, record)
   let flip = false, negateX = false, negateY = false
   if (Math.abs(record[0]) != 1) flip = true
   if (record[0] < 0) negateX = true
   if (record[1] < 0) negateY = true
+  const test = [1, 2]
+  console.log("COMPILED TO", {flip, negateX, negateY}, "TEST:", test)
+  negateAndFlip(test, negateX, negateY, flip)
+  console.log("TRANSFORMING COMMAND", test)
   return (command) => negateAndFlip(command, negateX, negateY, flip)
 }
 
 function compileTransforms(face, faces, record) {
-  if (!faces.length) return 
+  if (faces.length < 2) return 
   if (!face) face = faces.shift() // pop from faces 
   const nextFace = faces[0]
   console.log(face, transitions[face])

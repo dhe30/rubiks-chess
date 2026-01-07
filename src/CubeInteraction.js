@@ -5,11 +5,13 @@ import GameController from "./GameController";
 import SliceDragHandler from "./eventHandlers/SliceDragHandler";
 import ClickHandler from "./eventHandlers/ClickHandler";
 import IdleHandler from "./eventHandlers/IdleHandler";
+import OrbitDragHandler from "./eventHandlers/OrbitDragHandler";
 
 export const InteractionState = {
   IDLE: "idle",
   DRAGGING_SLICE: "dragging_slice",
   CLICK: "click",
+  DRAGGING_ORBIT: "dragging_orbit",
 };
 
 export default class CubeInteraction {
@@ -40,6 +42,7 @@ export default class CubeInteraction {
       [InteractionState.IDLE]: new IdleHandler(this),
       [InteractionState.DRAGGING_SLICE]: new SliceDragHandler(this),
       [InteractionState.CLICK]: new ClickHandler(this),
+      [InteractionState.DRAGGING_ORBIT]: new OrbitDragHandler(this),
     };
     this.activeHandler = null;
   }
@@ -130,14 +133,14 @@ export default class CubeInteraction {
     console.log("down");
     this.reset(); // clears vars associated with previous mouse down event
     const raycastResult = this.getRaycastIntersection(event);
-    if (!raycastResult) return;
-    console.log("not null!");
-    this.active = raycastResult.object;
-    this.start = raycastResult.point;
-    this.faceWorldNormal = raycastResult.faceWorldNormal;
-    this.faceLocalNormal = raycastResult.faceLocalNormal;
+    // if (!raycastResult) return;
+    // console.log("not null!");
+    // this.active = raycastResult.object;
+    // this.start = raycastResult.point;
+    // this.faceWorldNormal = raycastResult.faceWorldNormal;
+    // this.faceLocalNormal = raycastResult.faceLocalNormal;
     this.time = Date.now();
-    this.plane = raycastResult.plane;
+    // this.plane = raycastResult.plane;
     this.isDragging = true;
 
     for (const [state, handler] of Object.entries(this.handlers)) {

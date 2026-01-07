@@ -10,6 +10,10 @@ export const faceVectors = {
   back: new Vector3(0, 0, -1)
 }
 
+export const toRadians = (angle) => {
+  return angle * (Math.PI / 180);
+}
+
 export const quantizePositions = (precision) => (cubelet) => {
   cubelet.position.x = Number(cubelet.position.x.toFixed(precision))
   cubelet.position.y = Number(cubelet.position.y.toFixed(precision))

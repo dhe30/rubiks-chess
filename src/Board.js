@@ -51,6 +51,7 @@ export default class Board {
 
   walk(pos, commands, visited, onStep, onComplete) {
     console.log("WALKING", pos, commands)
+    let tile = null
     for (const direction of commands) {
       while (Math.abs(direction[0]) > 0 || Math.abs(direction[1]) > 0) {
         const step = this.step(direction)
@@ -73,9 +74,9 @@ export default class Board {
           }
         }
         // get tile at pos and check visited set 
-        const tile = this.getTile(pos)
+        tile = this.getTile(pos)
         if (visited.has(tile)) {
-          onComplete()
+          onComplete(tile)
           return 
         } else {
           visited.add(tile)
@@ -85,14 +86,14 @@ export default class Board {
         const terminate = onStep(tile)
         console.log("STEP", tile, terminate)
         if (terminate) {
-          onComplete()
+          onComplete(tile)
           return 
         }
       }
     }
 
     // invoke on complete function 
-    onComplete()
+    onComplete(tile)
   }
   
   walkAll(bcoor, commands, stepFn, onComplete = () => {}) {

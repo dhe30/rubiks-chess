@@ -42,6 +42,24 @@ export default class GameController {
         }
     }
 
+    testMove(from, to) { // tile objects
+        const record = [from.pos, from.piece, to.pos, to.piece]
+        to.piece = from.piece
+        from.piece = null
+        to.piece.position = to.pos
+        return record
+    }
+
+    undoTestMove(record) {
+        const [fromPos, fromPiece, toPos, toPiece] = record
+        toPiece.position = toPos
+        fromPiece.position = fromPos
+        fromTile = this.board.getTile(fromPos)
+        toTile = this.board.getTile(toPos)
+        fromTile.piece = fromPiece
+        toTile.piece = toPiece
+    }
+
     move(from, fromFace, to, toFace) { // tile objects with cube local faces
         // calculate transform from cube local face normals in cubeInteraction (BFS on transitions (two layers max)
         // move piece from from to to tile, and transform piece commands based on transform param
@@ -50,9 +68,7 @@ export default class GameController {
         // the to tile should always be part of from's legal move set 
 
         this.bury(to.piece)
-        to.piece = from.piece
-        from.piece = null
-        to.piece.position = to.pos
+        this.testMove(from, to)
         if (fromFace == toFace) return // no transform needed
         const transform = getTransform([fromFace, toFace])
 

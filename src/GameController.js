@@ -1,6 +1,9 @@
 import Board from "./Board"
 import { getTransform } from "./faceRotationMap"
-import Piece from "./Piece"
+// import Piece from "./pieces/Piece.js"
+import TestDownPiece from "./pieces/TestDownPiece"
+import TestLeftPiece from "./pieces/TestLeftPiece"
+import TestUpPiece from "./pieces/TestUpPiece"
 import { boundedWalk } from "./utilities/lambdas"
 
 export default class GameController {
@@ -10,7 +13,7 @@ export default class GameController {
      * @param {Board} board 
      * @param {[Piece]} groups 
      */
-    constructor(board, groups = [[new Piece({face: "FRONT", x:7,y:0})]]) {
+    constructor(board, groups = [[new TestLeftPiece({face: "FRONT", x:0,y:0}), new TestUpPiece({face: "FRONT", x:3,y:3}), new TestDownPiece({face: "FRONT", x:5, y:5})]]) {
         this.board = board
         this.groups = groups
         this.setupPieces()

@@ -195,7 +195,7 @@ export const transitions = {
   },
   LEFT: {
     up: { face: "FRONT", transform: (pos) => negateAndFlip(pos, false, false, true), orient: ([x, y]) =>  [0, x] },
-    down: { face: "BACK", transform: (pos) => negateAndFlip(pos, false, true, true), orient: ([x, y]) =>  [0, x] },
+    down: { face: "BACK", transform: (pos) => negateAndFlip(pos, true, false, true), orient: ([x, y]) =>  [0, x] },
     left: { face: "BOTTOM", transform: (pos) => negateAndFlip(pos, true, false, false), orient: ([x, y]) =>  [0, y] },
     right: { face: "TOP", transform: (pos) => {}, orient: ([x, y]) =>  [0, y] }
   },
@@ -206,7 +206,7 @@ export const transitions = {
     right: { face: "RIGHT", transform: (pos) => negateAndFlip(pos, false, true, false), orient: ([x, y]) =>  [Number.POSITIVE_INFINITY, y] }
   },
   RIGHT: {
-    up: { face: "FRONT", transform: (pos) => negateAndFlip(pos, false, true, true), orient: ([x, y]) =>  [Number.POSITIVE_INFINITY, x] },
+    up: { face: "FRONT", transform: (pos) => negateAndFlip(pos, true, false, true), orient: ([x, y]) =>  [Number.POSITIVE_INFINITY, x] },
     down: { face: "BACK", transform: (pos) => negateAndFlip(pos, false, false, true), orient: ([x, y]) =>  [Number.POSITIVE_INFINITY, x] },
     left: { face: "BOTTOM", transform: (pos) => {}, orient: ([x, y]) =>  [Number.POSITIVE_INFINITY, y] },
     right: { face: "TOP", transform: (pos) => negateAndFlip(pos, true, false, false), orient: ([x, y]) =>  [Number.POSITIVE_INFINITY, y] }

@@ -7,3 +7,13 @@
     record.add(tile)
     return false
   } 
+
+  export const spyWalk = (id, group, record) => (tile) => {
+    if (tile.piece && tile.piece.id == id && tile.piece.group == group) {
+      record.add(tile)
+      return true
+    } else if (tile.piece) {
+      return true
+    }
+    return false
+  }

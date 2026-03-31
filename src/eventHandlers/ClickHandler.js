@@ -1,5 +1,7 @@
 import { getCubeFaceFromNormal } from "../utilities/utilities";
 import { InteractionState } from "../CubeInteraction";
+import { GameEvents } from "./EventTypes.js";
+import { gameEvents } from "./EventEmitter.js";
 import IdleHandler from "./IdleHandler.js";
 export default class ClickHandler extends IdleHandler {
   constructor(cubeInteraction) {
@@ -109,5 +111,13 @@ export default class ClickHandler extends IdleHandler {
       const cubelet = this.dirty.pop();
       cubelet.renderTiles();
     }
+  }
+}
+
+export class GameState {
+  constructor(gameController) {
+    this.gameController = gameController;
+    this.selectedPos = null;
+    GameEvent
   }
 }

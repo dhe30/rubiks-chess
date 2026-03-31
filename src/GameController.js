@@ -22,7 +22,7 @@ export default class GameController {
         for (const group of groups) {
             const map = new Map()
             for (const piece of group) {
-                map.set(piece.id, new Set())
+                map.set(piece.id, [])
             }
             this.legalMoves.push(map)
         }
@@ -86,7 +86,7 @@ export default class GameController {
         return this.legalMoves[piece.group].get(piece.id)
     }
 
-    findLegalMoves(piece) {
+    findPseudoLegalMoves(piece) {
         const legalSet = this.getMoves(piece)
         legalSet.clear()
         console.log("Finding legal moves for piece", piece, piece.position)
@@ -99,8 +99,18 @@ export default class GameController {
         // extract piece.commands 
         // call board api with piece.position, piece.commands and lambda getLegal()
         for (const piece of this.groups[player]) {
-            this.findLegalMoves(piece)
+            this.findPseudoLegalMoves(piece) // updates this.legalMoves
+            this.getMoves(piece).filter(move => { // accesses pseudolegal moves and retains only legal ones
+                const testMove = this.testMove(this.board.getTile(piece.position), move)
+                const legal = this.isKingInCheck(player)
+                this.undoTestMove(testMove)
+                return legal
+            })
         }
+    }
+
+    isKingInCheck(player) {
+
     }
 
     endTurn() {

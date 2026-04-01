@@ -114,10 +114,27 @@ export default class ClickHandler extends IdleHandler {
   }
 }
 
+// intended to be a singleton used solely by GameController
 export class GameState {
   constructor(gameController) {
     this.gameController = gameController;
     this.selectedPos = null;
-    GameEvent
+    gameEvents.on(GameEvents.TILE_CLICKED, this.handleTileClick.bind(this));
+  }
+
+  handleTileClick(bcoordinates) {
+    const tile = this.gameController.board.getTile(bcoordinates);
+
+    // Case 1: User has already selected a piece and has clicked a legal move tile
+    if (this.selectedPos && this.isLegalMove(this.selectedPos, bcoordinates)) {}
+  }
+
+  isLegalMove(from_tile_bcoor, to_tile_bcoor) {
+    // to_tile exists in legal moves of from_tile's piece
+    const from_tile = this.gameController.board.getTile(from_tile_bcoor);
+    const to_tile = this.gameController.board.getTile(to_tile_bcoor);
+    const legalMoves = this.gameController.getMoves(from_tile.piece);
+    return legalMoves.has(to_tile);
   }
 }
+

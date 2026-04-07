@@ -1,9 +1,11 @@
 import Board from "./Board"
 import { getTransform } from "./faceRotationMap"
+import Piece from "./pieces/Piece"
 // import Piece from "./pieces/Piece.js"
 import TestDownPiece from "./pieces/TestDownPiece"
 import TestLeftPiece from "./pieces/TestLeftPiece"
 import TestUpPiece from "./pieces/TestUpPiece"
+import Tile from "./Tile"
 import { boundedWalk } from "./utilities/lambdas"
 
 export default class GameController {
@@ -42,6 +44,18 @@ export default class GameController {
         }
     }
 
+    /**
+     * Initializes the board's threats for each tile. This function should only be called if the 
+     * pieces' step function sets the tile's threats (i.e. boundedWalkThreat)
+     */
+    initThreats() {
+        for (const group of this.groups) {
+            for (const piece of group) {
+                this.findPseudoLegalMoves(piece)  
+            }            
+        }
+    }
+
     testMove(from, to) { // tile objects
         const record = [from.pos, from.piece, to.pos, to.piece]
         to.piece = from.piece
@@ -60,12 +74,21 @@ export default class GameController {
         toTile.piece = toPiece
     }
 
-    move(from, fromFace, to, toFace) { // tile objects with cube local faces
+    /**
+     * Moves a piece from one tile to another, handles captures, and transforms piece commands based on face changes. This function does NOT check for legality.
+     * @param {Tile} from 
+     * @param {Tile} to 
+     * @returns 
+     */
+    move(from, to) { // tile objects with cube local faces
         // calculate transform from cube local face normals in cubeInteraction (BFS on transitions (two layers max)
         // move piece from from to to tile, and transform piece commands based on transform param
 
 
         // the to tile should always be part of from's legal move set 
+
+        const fromFace = from.pos.face // trust that the tile's stored position is correct
+        const toFace = to.pos.face
 
         this.bury(to.piece)
         this.testMove(from, to)
@@ -79,18 +102,22 @@ export default class GameController {
     }
 
     bury(piece) { // handle capture
-        
+        piece.bury()
     }
 
     getMoves(piece) {
         return this.legalMoves[piece.group].get(piece.id)
     }
 
+    /**
+     * Finds pseudo-legal moves for a given piece by invoking its step function 
+     * @param {Piece} piece 
+     */
     findPseudoLegalMoves(piece) {
         const legalSet = this.getMoves(piece)
         legalSet.clear()
         console.log("Finding legal moves for piece", piece, piece.position)
-        this.board.walkAll(piece.position, piece.getCommands(), boundedWalk(legalSet))
+        this.board.walkAll(piece.position, piece.getCommands(), piece.stepFunction(legalSet))
         console.log(legalSet)
     }
 

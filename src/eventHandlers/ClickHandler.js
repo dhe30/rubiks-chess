@@ -126,7 +126,28 @@ export class GameState {
     const tile = this.gameController.board.getTile(bcoordinates);
 
     // Case 1: User has already selected a piece and has clicked a legal move tile
-    if (this.selectedPos && this.isLegalMove(this.selectedPos, bcoordinates)) {}
+    if (this.selectedPos && this.isLegalMove(this.selectedPos, bcoordinates)) {
+      const selectedTile = this.gameController.board.getTile(this.selectedPos);
+      this.gameController.move(selectedTile, tile);
+      this.selectedPos = null;
+      this.gameController.endTurn();
+      gameEvents.emit(GameEvents.AVAILABLE_MOVES_UPDATED, {availableMoves: []})
+      return;
+    }
+
+    // Case 2: User has seelcted their own piece
+    if (tile.piece && tile.piece.group == this.gameController.turn) {
+      this.selectedPos = bcoordinates
+
+      const legalMoves = this.gameController.getMoves(tile.piece);
+      const moveCoords = Array.from(legalMoves).map(tile => tile.pos)
+
+      gameEvents.emit(GameEvents.AVAILABLE_MOVES_UPDATED, {availableMoves: moveCoords})
+    } else {
+      // Case 3: User has clicked an empty tile or opponent piece without having selected a piece first, or has clicked an illegal move tile
+      this.selectedPos = null
+      gameEvents.emit(GameEvents.AVAILABLE_MOVES_UPDATED, {availableMoves: []})
+    }
   }
 
   isLegalMove(from_tile_bcoor, to_tile_bcoor) {

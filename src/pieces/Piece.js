@@ -1,4 +1,5 @@
 import * as THREE from 'three'
+import { boundedWalkThreat } from '../utilities/lambdas'
 export default class Piece {
     
     constructor(bcoordinate) {
@@ -12,11 +13,17 @@ export default class Piece {
         this.commands = [[[1,0]]] 
         this.id = "test"
         this.mesh = null
+        this.active = true
         this.group = 0
+        this.stepFunction = boundedWalkThreat(this)
     }
 
     getCommands() { // return clone of commands
         return structuredClone(this.commands)
+    }
+
+    bury() {
+        this.active = false
     }
 
     create() {

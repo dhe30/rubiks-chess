@@ -33,4 +33,13 @@ export default class UIController {
         }
         this.highlighted = [];
     }
+
+    /**
+     * 
+     * @param {{face: string, x: number, y: number}} from 
+     * @param {{face: string, x: number, y: number}} to 
+     */
+    animatePieceMove({from, to}) {
+
+    }
 }

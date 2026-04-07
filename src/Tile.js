@@ -3,6 +3,7 @@ export default class Tile {
         this.pos = value
         this.piece = null
         this.highlighted = false
+        this.threats = new Set()
     }
 
     place(piece) {

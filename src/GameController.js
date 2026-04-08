@@ -24,11 +24,12 @@ export default class GameController {
         for (const group of groups) {
             const map = new Map()
             for (const piece of group) {
-                map.set(piece.id, [])
+                map.set(piece.id, new Set())
             }
             this.legalMoves.push(map)
         }
         this.turn = -1 // 0-indexed
+        this.initThreats()
         this.endTurn() // set to player 0
     }
 
@@ -56,11 +57,31 @@ export default class GameController {
         }
     }
 
+    /**
+     * Captures from one tile to another, returning a record of the transaction. Recalculates enemy tile threats and updates the piece's position,
+     * but does NOT recalcuate commands based on face changes.
+     * @param {Tile} from 
+     * @param {Tile} to 
+     * @returns 
+     */
     testMove(from, to) { // tile objects
         const record = [from.pos, from.piece, to.pos, to.piece]
+
+        if (to.piece) {
+            to.piece.bury() // set piece as inactive for proper findPseudoLegalMoves behavior
+            this.findPseudoLegalMoves(to.piece) // unthreaten and clear legal moves 
+        }
+
+        // No need to update state for the piece being moved since it is not involved in checking predicate violations
+        // (we only need to update the pieces it blocks/unblocks)
         to.piece = from.piece
         from.piece = null
         to.piece.position = to.pos
+
+        const threats = [...to.threats, ...from.threats]
+        for (const piece of threats) {
+            if (piece.group !== to.piece.group) this.findPseudoLegalMoves(piece)
+        }
         return record
     }
 
@@ -68,10 +89,20 @@ export default class GameController {
         const [fromPos, fromPiece, toPos, toPiece] = record
         toPiece.position = toPos
         fromPiece.position = fromPos
-        fromTile = this.board.getTile(fromPos)
-        toTile = this.board.getTile(toPos)
+        const fromTile = this.board.getTile(fromPos)
+        const toTile = this.board.getTile(toPos)
         fromTile.piece = fromPiece
         toTile.piece = toPiece
+
+        if (toPiece) {
+            toPiece.resurrect() // set piece as active for proper findPseudoLegalMoves behavior
+            this.findPseudoLegalMoves(toPiece) // rethreaten and restore legal moves
+        }
+
+        const threats = [...toTile.threats, ...fromTile.threats]
+        for (const piece of threats) {
+            if (piece.group !== fromPiece.group) this.findPseudoLegalMoves(piece)
+        }
     }
 
     /**
@@ -109,16 +140,26 @@ export default class GameController {
         return this.legalMoves[piece.group].get(piece.id)
     }
 
+    clearLegalMoves(piece) {
+        const legalSet = this.getMoves(piece)
+        for (const tile of legalSet) {
+            tile.threats.delete(piece)
+        }
+        legalSet.clear()
+    }
+
     /**
      * Finds pseudo-legal moves for a given piece by invoking its step function 
      * @param {Piece} piece 
      */
     findPseudoLegalMoves(piece) {
-        const legalSet = this.getMoves(piece)
-        legalSet.clear()
-        console.log("Finding legal moves for piece", piece, piece.position)
-        this.board.walkAll(piece.position, piece.getCommands(), piece.stepFunction(legalSet))
-        console.log(legalSet)
+        clearLegalMoves(piece)
+        if (piece.active) {
+            const legalSet = this.getMoves(piece)
+            // console.log("Finding legal moves for piece", piece, piece.position)
+            this.board.walkAll(piece.position, piece.getCommands(), piece.stepFunction(legalSet))
+            // console.log(legalSet)
+        }
     }
 
     findAllLegalMoves(player) {
@@ -129,15 +170,33 @@ export default class GameController {
             this.findPseudoLegalMoves(piece) // updates this.legalMoves
             this.getMoves(piece).filter(move => { // accesses pseudolegal moves and retains only legal ones
                 const testMove = this.testMove(this.board.getTile(piece.position), move)
-                const legal = this.isKingInCheck(player)
+                const legal = (this.checkPredicateViolations() == false)
                 this.undoTestMove(testMove)
                 return legal
             })
         }
     }
 
-    isKingInCheck(player) {
+    /**
+     * Invoked to check if the state of the board is legal or illegal. 
+     * The state of the board cannot be stale when this function is called.
+     * For instance, any threats on the board must be up to date.
+     */
+    checkPredicateViolations() {
+        // the only predicate of chess is that the king cannot be in check
+        return this.isKingInCheck(this.turn);
+    }
 
+    isKingInCheck(player) {
+        const kingTile = this.board.getTile(this.groups[player][0].position) // assuming the first piece in each group is the king
+        for (let i = 0; i < this.players; i++) {
+            if (i == player) continue
+            for (const piece of this.groups[i]) {
+                const legalSet = this.getMoves(piece)
+                if (legalSet.has(kingTile)) return true
+            }
+        }
+        return false
     }
 
     endTurn() {

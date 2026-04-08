@@ -26,6 +26,10 @@ export default class Piece {
         this.active = false
     }
 
+    resurrect() {
+        this.active = true
+    }
+
     create() {
         const sphereGeometry = new THREE.SphereGeometry(0.4, 32, 32);
         const sphereMaterial = new THREE.MeshBasicMaterial({ color: 0xffff00 });

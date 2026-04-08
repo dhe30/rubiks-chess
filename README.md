@@ -21,3 +21,7 @@ MVP: have a piece render, upon click, highlight legal tiles, upon click, move to
 
 todo log (non-priority):
 * make cubelet and cube extend THREE.Mesh instead of storing the mesh in this.object 
+
+general log: 
+* lambda and tile threats are currently operating on the actual piece object in memory and not it's primitive id 
+* Groups passed into GameController must have some way to check what piece is the king (maybe add a name field to the piece class), currently we just assume the first piece is the king 

@@ -123,6 +123,7 @@ export default class GameController {
 
         this.bury(to.piece)
         this.testMove(from, to)
+        to.piece.moved() // update piece state if needed (e.g. pawn first move)
         if (fromFace == toFace) return // no transform needed
         const transform = getTransform([fromFace, toFace])
 
